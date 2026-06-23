@@ -21,11 +21,25 @@ description: >-
 ## 启动前必读
 
 1. 读取目标仓库的 `AGENTS.md`、README、构建脚本和测试入口。
-2. 读取本仓库：
-   - `harness/optim-harness.md`
-   - `harness/report-templates.md`
-   - `knowledge/constraints.md`
+2. 读取本仓库根目录：
+   - `../../../README.md`
+   - `../../../optimctl --help`
+   - `../../../harness/optim-harness.md`
+   - `../../../harness/report-templates.md`
+   - `../../../knowledge/constraints.md`
 3. 按实现类型读取 `knowledge/ascend-operator-knowledge.md` 中对应章节。
+
+## 本仓库执行入口
+
+本仓库提供 `optimctl` 命令：
+
+```bash
+./optimctl doctor
+./optimctl init --task-dir /path/to/repo/test --framework triton-ascend --operator-name <op_name> --target-repo /path/to/repo
+./optimctl status --task-dir /path/to/repo/test
+```
+
+`optimctl init` 只创建任务文件和报告模板，不替代源码阅读、基线建立、精度验证或性能验证。
 
 ## Context Gate
 

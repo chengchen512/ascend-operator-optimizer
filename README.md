@@ -1,6 +1,6 @@
 # ascend-operator-optimizer
 
-一个面向 Codex 的单 skill 仓库，用于驱动 Ascend NPU 算子性能优化。
+一个可直接执行的 Ascend NPU 算子优化目录，用于初始化任务、固定报告模板，并给 Codex 提供 agent skill。
 
 覆盖范围：
 
@@ -12,7 +12,11 @@
 
 ```text
 .
-├── SKILL.md
+├── .agents/
+│   └── skills/
+│       └── ascend-operator-optimizer/
+│           └── SKILL.md
+├── optimctl
 ├── knowledge/
 │   ├── ascend-operator-knowledge.md
 │   └── constraints.md
@@ -22,18 +26,33 @@
     └── task-template.yaml
 ```
 
-仓库只有一个 skill 入口：`SKILL.md`。`knowledge/` 提供硬件、tiling/grid、搬运、API、UB、流水、验证的先验知识；`harness/` 定义任务状态、用例、基线、精度和性能报告的文件契约。
+`.agents/skills/ascend-operator-optimizer/SKILL.md` 是 agent 入口。`optimctl` 是本地命令入口。`knowledge/` 提供硬件、tiling/grid、搬运、API、UB、流水、验证的先验知识；`harness/` 定义任务状态、用例、基线、精度和性能报告的文件契约。
 
-## 安装
-
-推荐使用符号链接，让 Codex 直接读取当前仓库：
+## 快速检查
 
 ```bash
-mkdir -p ~/.agents/skills
-ln -sfn /Users/songdehao/sdh-lab/code/ascend-operator-optimizer ~/.agents/skills/ascend-operator-optimizer
+./optimctl doctor
 ```
 
-## 使用
+## 初始化任务
+
+```bash
+./optimctl init \
+  --task-dir /path/to/repo/test \
+  --framework triton-ascend \
+  --operator-name <op_name> \
+  --target-repo /path/to/repo \
+  --precision-command "<precision command>" \
+  --performance-command "<performance command>"
+```
+
+查看任务状态：
+
+```bash
+./optimctl status --task-dir /path/to/repo/test
+```
+
+## Codex 使用
 
 在 Codex 中发起任务时，明确目标仓库、算子名和实现类型：
 
@@ -65,7 +84,7 @@ ln -sfn /Users/songdehao/sdh-lab/code/ascend-operator-optimizer ~/.agents/skills
 
 ## 执行产物
 
-skill 会在目标算子的 `test/` 或 benchmark 附近维护：
+`optimctl init` 会在目标算子的 `test/` 或 benchmark 附近创建：
 
 - `optim_task.yaml`
 - `failure_logs/`
