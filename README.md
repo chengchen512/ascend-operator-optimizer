@@ -1,4 +1,4 @@
-# ascend-op-optim-skill
+# ascend-operator-optimizer
 
 一个面向 Codex 的单 skill 仓库，用于驱动 Ascend NPU 算子性能优化。
 
@@ -29,8 +29,8 @@
 推荐使用符号链接，让 Codex 直接读取当前仓库：
 
 ```bash
-mkdir -p ~/.codex/skills
-ln -sfn /Users/songdehao/sdh-lab/code/ascend-op-optim-skill ~/.codex/skills/ascend-op-optim-skill
+mkdir -p ~/.agents/skills
+ln -sfn /Users/songdehao/sdh-lab/code/ascend-operator-optimizer ~/.agents/skills/ascend-operator-optimizer
 ```
 
 ## 使用
@@ -38,7 +38,7 @@ ln -sfn /Users/songdehao/sdh-lab/code/ascend-op-optim-skill ~/.codex/skills/asce
 在 Codex 中发起任务时，明确目标仓库、算子名和实现类型：
 
 ```text
-使用 ascend-operator-optim-codex，优化 /path/to/repo 里的 <op_name> 算子。
+使用 ascend-operator-optimizer，优化 /path/to/repo 里的 <op_name> 算子。
 实现类型是 <ascend-c | triton-ascend | tilelang-ascend>。
 先建立基线，再做精度和性能验证。
 ```
@@ -46,7 +46,7 @@ ln -sfn /Users/songdehao/sdh-lab/code/ascend-op-optim-skill ~/.codex/skills/asce
 实现类型不确定时：
 
 ```text
-使用 ascend-operator-optim-codex，先识别 /path/to/repo 中 <op_name> 的实现类型，再优化性能。
+使用 ascend-operator-optimizer，先识别 /path/to/repo 中 <op_name> 的实现类型，再优化性能。
 ```
 
 ## 输入

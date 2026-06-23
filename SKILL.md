@@ -1,5 +1,5 @@
 ---
-name: ascend-operator-optim-codex
+name: ascend-operator-optimizer
 description: >-
   用 Codex 驱动 Ascend NPU 算子性能优化。当用户提到 Ascend C、
   Triton-Ascend、TileLang-Ascend、算子优化、tiling、UB、AIV/AIC、
