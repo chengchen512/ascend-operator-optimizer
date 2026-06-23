@@ -1,0 +1,22 @@
+{
+  "operator": {
+    "name": "operator_name",
+    "framework": "ascend-c",
+    "notes": "Edit commands before running. Benchmark must write JSON to OPT_HARNESS_RESULT."
+  },
+  "workspace": ".",
+  "run_root": ".operator-optim",
+  "commands": {
+    "build": "",
+    "correctness": "python -m pytest tests -q",
+    "benchmark": "python benchmark.py --json-output \"$OPT_HARNESS_RESULT\""
+  },
+  "benchmark": {
+    "unit": "us",
+    "primary_metric": "custom",
+    "smaller_is_better": true,
+    "case_key_fields": ["case", "shape", "dtype", "mode"],
+    "metadata_fields": ["profiler", "warmup", "repeat", "active", "statistic"]
+  },
+  "environment": {}
+}

@@ -12,7 +12,20 @@ from pathlib import Path
 
 
 REPO_ROOT = Path(__file__).resolve().parent
-SKILL_PATH = REPO_ROOT / ".agents" / "skills" / "ascend-operator-optimizer" / "SKILL.md"
+SKILL_DIR = REPO_ROOT / ".agents" / "skills" / "ascend-operator-optimizer"
+SKILL_PATH = SKILL_DIR / "SKILL.md"
+SKILL_HARNESS = SKILL_DIR / "scripts" / "harness.py"
+SKILL_HARNESS_EXAMPLE = SKILL_DIR / "assets" / "harness.example.json"
+SKILL_REFERENCES = (
+    "INDEX.md",
+    "hardware.md",
+    "playbook.md",
+    "constraints.md",
+    "harness.md",
+    "ascendc.md",
+    "ascendc-examples.md",
+    "sources.md",
+)
 TASK_TEMPLATE = REPO_ROOT / "harness" / "task-template.yaml"
 REPORT_TEMPLATES = REPO_ROOT / "harness" / "report-templates.md"
 KNOWLEDGE_PATH = REPO_ROOT / "knowledge" / "ascend-operator-knowledge.md"
@@ -224,12 +237,18 @@ def write_new_files(files: dict[Path, str], force: bool) -> None:
 
 def cmd_doctor(_: argparse.Namespace) -> int:
     checks = [
-        ("skill", SKILL_PATH.is_file()),
-        ("optimctl executable", os.access(REPO_ROOT / "optimctl", os.X_OK)),
-        ("task template", TASK_TEMPLATE.is_file()),
-        ("report templates", REPORT_TEMPLATES.is_file()),
-        ("knowledge", KNOWLEDGE_PATH.is_file()),
-        ("constraints", CONSTRAINTS_PATH.is_file()),
+        ("skill entrypoint", SKILL_PATH.is_file()),
+        ("skill harness", SKILL_HARNESS.is_file()),
+        ("skill harness example", SKILL_HARNESS_EXAMPLE.is_file()),
+        (
+            "skill references",
+            all((SKILL_DIR / "references" / name).is_file() for name in SKILL_REFERENCES),
+        ),
+        ("optimctl file", (REPO_ROOT / "optimctl").is_file()),
+        ("legacy task template", TASK_TEMPLATE.is_file()),
+        ("legacy report templates", REPORT_TEMPLATES.is_file()),
+        ("legacy knowledge", KNOWLEDGE_PATH.is_file()),
+        ("legacy constraints", CONSTRAINTS_PATH.is_file()),
         ("root SKILL.md moved", not (REPO_ROOT / "SKILL.md").exists()),
     ]
     for name, ok in checks:
@@ -348,3 +367,6 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
+
+
+

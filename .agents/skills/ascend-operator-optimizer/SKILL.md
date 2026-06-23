@@ -6,59 +6,132 @@ description: >-
   MTE/Vector/Scalar、流水、精度或性能回归时使用。
 ---
 
-# Ascend 算子性能优化
+# Ascend Operator Optimizer
 
 ## 目标
 
-在目标算子仓库中完成可验证的性能优化。支持三类实现：
+在目标算子仓库中做可验证、可回退、可复现的 Ascend NPU 性能优化。核心规则只有一条：
+
+**正确性优先；任何性能收益都必须来自同一批 case、同一套命令和可比较的测量。**
+
+本 Skill 支持：
 
 - Ascend C
 - Triton-Ascend
 - TileLang-Ascend
 
-流程固定为：识别框架与算子边界，建立基线，诊断瓶颈，小步修改，精度验证，使用同一批 case 做性能对比。
+固定循环：
+
+```text
+inspect -> baseline -> diagnose -> one hypothesis -> patch
+        -> correctness gate -> benchmark gate -> accept/revert -> repeat (max 3)
+```
+
+## 自包含结构
+
+只依赖本 Skill 目录内的文件：
+
+```text
+.agents/skills/ascend-operator-optimizer/
+├── SKILL.md
+├── assets/harness.example.json
+├── references/
+│   ├── INDEX.md
+│   ├── hardware.md
+│   ├── playbook.md
+│   ├── constraints.md
+│   ├── harness.md
+│   ├── ascendc.md
+│   ├── ascendc-examples.md
+│   └── sources.md
+└── scripts/harness.py
+```
+
+不要依赖目标仓库之外的 `knowledge/` 或 `harness/` 目录。若当前仓库中仍有旧版资料，只把它们当作人工参考，不作为执行契约。
 
 ## 启动前必读
 
-1. 读取目标仓库的 `AGENTS.md`、README、构建脚本和测试入口。
-2. 读取本仓库根目录：
-   - `../../../README.md`
-   - `../../../optimctl --help`
-   - `../../../harness/optim-harness.md`
-   - `../../../harness/report-templates.md`
-   - `../../../knowledge/constraints.md`
-3. 按实现类型读取 `knowledge/ascend-operator-knowledge.md` 中对应章节。
+1. 读取目标仓库的 `AGENTS.md`、README、构建脚本、测试入口和 benchmark 入口。
+2. 读取本 Skill 的：
+   - `references/INDEX.md`
+   - `references/playbook.md`
+   - `references/constraints.md`
+   - `references/harness.md`
+   - `references/hardware.md`
+3. 若目标是 Ascend C，先读取 `references/ascendc.md`。
+4. 若需要修改 Ascend C 源码，再读取 `references/ascendc-examples.md` 中相关代码模式。
+5. 若需要确认来源或外部资料边界，读取 `references/sources.md`。
 
-## 本仓库执行入口
+未完成目标仓库上下文读取前，不修改代码。
 
-本仓库提供 `optimctl` 命令：
+## 在目标仓库安装
+
+将整个 Skill 目录复制到目标仓库：
 
 ```bash
-./optimctl doctor
-./optimctl init --task-dir /path/to/repo/test --framework triton-ascend --operator-name <op_name> --target-repo /path/to/repo
-./optimctl status --task-dir /path/to/repo/test
+mkdir -p .agents/skills
+cp -R /path/to/codex-ascend-operator-optimizer/.agents/skills/ascend-operator-optimizer \
+  .agents/skills/
 ```
 
-`optimctl init` 只创建任务文件和报告模板，不替代源码阅读、基线建立、精度验证或性能验证。
+创建 harness 配置：
+
+```bash
+cp .agents/skills/ascend-operator-optimizer/assets/harness.example.json \
+  operator-optim.json
+```
+
+只编辑配置中的 `build`、`correctness`、`benchmark` 命令。benchmark 命令必须把 JSON 写入环境变量 `OPT_HARNESS_RESULT` 指向的路径。
+
+## Harness 契约
+
+建立基线：
+
+```bash
+python .agents/skills/ascend-operator-optimizer/scripts/harness.py \
+  baseline --config operator-optim.json
+```
+
+评估一轮修改：
+
+```bash
+python .agents/skills/ascend-operator-optimizer/scripts/harness.py \
+  evaluate --config operator-optim.json --label iter-1
+```
+
+运行记录写入 `.operator-optim/`，通常应排除在版本控制之外。
+
+benchmark JSON 最少包含：
+
+```json
+{
+  "cases": [
+    {
+      "name": "case-id",
+      "latency_us": 123.4
+    }
+  ]
+}
+```
+
+case 名称必须稳定。比较时只接受同一批 case；缺失、新增或单位不一致都不能声明性能收益。
 
 ## Context Gate
 
-先识别实现类型：
+先识别实现类型和算子边界：
 
 | 实现类型 | 典型文件 | 重点 |
 | --- | --- | --- |
 | Ascend C | `op_host/*.cpp`、`op_kernel/*.cpp`、`design.md` | tiling、DataCopy、TPipe/TQue、L0/L1/UB |
-| Triton-Ascend | `*.py` 中的 `@triton.jit` / `triton.language as tl` | BLOCK/grid、UB、mask、连续访存、msprof |
+| Triton-Ascend | `*.py` 中的 `@triton.jit` / `triton.language as tl` | BLOCK/grid、mask、连续访存、UB、msprof |
 | TileLang-Ascend | `@tilelang.jit`、`T.prim_func`、`T.Kernel(..., is_npu=True)` | 分块、`T.alloc_shared`、`T.copy`、`T.Pipelined`、NPU API 差异 |
 
 必须完成：
 
 - 读取设计文档、说明文档或测试文档。
 - 读取目标算子完整源码。
-- 找到构建命令、精度测试入口和性能测试入口。
-- 建立或更新 `optim_task.yaml`，格式参考 `harness/task-template.yaml`。
-
-未完成 Context Gate 时，不修改代码。
+- 找到构建命令、正确性测试入口和性能测试入口。
+- 配好 `operator-optim.json`，并确认 benchmark 输出结构稳定。
 
 ## Baseline Gate
 
@@ -66,25 +139,10 @@ description: >-
 
 - 固定一批性能 case。
 - 自定义算子和标杆都在 NPU 上运行。
-- 按 `harness/report-templates.md` 保存基线报告。
-- 记录 profiler 参数和执行命令。
+- 用 harness 的 `baseline` 命令保存基线。
+- 记录命令、环境、单位、warmup、repeat、统计方式和 profiler/trace 路径。
 
 没有基线时，不声明性能收益。
-
-## Failure Log Gate
-
-遇到构建、精度或性能失败时，必须先读取失败日志和失败 case，再更新任务文件。
-
-写入文件的内容只允许包含：
-
-- 命令与退出码。
-- 日志路径。
-- 原始日志片段。
-- case、shape、dtype、模式。
-- 可观察现象。
-- 下一步核查项。
-
-不要把推断性结论写入 `optim_task.yaml`、`precision_report.md`、`performance_report.md` 或 `optim_summary.md`。推断只允许在当前对话中说明，并且必须标明它是推断。
 
 ## Diagnose
 
@@ -107,66 +165,71 @@ description: >-
 - 保留原有输入 shape、dtype、语义和调用接口。
 - 不为了性能硬编码单一 shape。
 - 不绕过目标实现类型，例如 Triton 问题不能直接改成外部 Python 拼接。
-- 变更后更新 `optim_task.yaml` 的本轮目标、文件、命令和结果。
+- 修改后先过 correctness，再进入 benchmark。
 
 最多 3 轮。若 3 轮后仍无收益，停止并输出事实结果。
 
-## Build Gate
+## Correctness Gate
 
-按目标框架执行构建或编译：
+性能测试前必须通过正确性验证：
 
-- Ascend C：重新构建并安装算子包。
-- Triton-Ascend：触发 JIT 编译，保留编译错误和 kernel 名称。
-- TileLang-Ascend：执行 TileLang NPU 编译流程，保留 IR 或编译日志。
-
-构建失败时先修复构建问题；同一轮构建排错最多 3 次。
-
-## Precision Gate
-
-性能测试前必须通过精度验证：
-
-- 覆盖原有全部 dtype。
-- 覆盖小、中、大和边界 shape。
-- Triton-Ascend 默认用 `torch.testing.assert_close(..., rtol=1e-3, atol=1e-3)`，除非目标仓库已有更严格标准。
-- Ascend C 优先使用 MERE 与 MARE 报告。
+- 覆盖目标仓库已有 dtype、shape 和边界 case。
+- Triton-Ascend 默认使用目标仓库既有阈值；没有标准时才考虑 `rtol=1e-3, atol=1e-3` 级别的临时门槛。
+- Ascend C 优先保留 MERE/MARE 或目标仓库已有精度报告。
 - TileLang-Ascend 对比 PyTorch-NPU 或目标仓库既有标杆。
-- 精度报告必须使用 `harness/report-templates.md` 的固定结构。
 
-精度失败时，不进入性能测试；先修复或回退本轮修改。
+正确性失败时，不进入性能测试；先修复或回退本轮修改。
 
-## Performance Gate
+## Benchmark Gate
 
 性能验证必须满足：
 
 - 使用 Baseline Gate 的同一批 case。
-- 使用同一套 profiler 或计时脚本。
-- 记录单位、warmup、repeat/active、kernel name、统计方式和 trace 路径。
-- 性能报告必须使用 `harness/report-templates.md` 的固定结构。
-- 输出基线、优化后、标杆三方对比。
+- 使用同一套计时脚本或 profiler。
+- `harness.py evaluate` 能与基线完成 case 对齐。
+- 记录基线、优化后、标杆三方对比；没有标杆时明确写 `N/A`。
 - 结论基于多 case，而不是单个最快结果。
+
+如果收益来自噪声范围、case 不可比、单位不一致或正确性失败，必须拒绝该轮修改并回退。
+
+## Failure Log Gate
+
+遇到构建、正确性或性能失败时，先读取失败日志和失败 case。
+
+文件记录只允许包含：
+
+- 命令与退出码。
+- 日志路径。
+- 原始日志片段。
+- case、shape、dtype、模式。
+- 可观察现象。
+- 下一步核查项。
+
+不要把推断性结论写入执行产物。推断只允许在当前对话中说明，并且必须标明它是推断。
 
 ## 输出要求
 
 最终回复必须包含：
 
 - 修改摘要。
-- 精度结果。
+- 正确性结果。
 - 性能对比摘要。
 - 每轮优化目标和结论。
-- 相关文件路径。
+- 相关文件路径和 harness run 目录。
 
-不得只给文件路径，不得在精度失败时声明性能成功。
+不得只给文件路径，不得在正确性失败时声明性能成功。
 
 ## 自检清单
 
 - [ ] 已识别实现类型：Ascend C / Triton-Ascend / TileLang-Ascend。
 - [ ] 已读取目标仓库约束、设计或测试文档、目标算子源码。
-- [ ] 已读取本 skill 的 harness、report templates 与 constraints。
-- [ ] 已建立基线报告。
+- [ ] 已读取本 Skill 的 `references/` 和 `harness.py` 契约。
+- [ ] 已建立基线。
 - [ ] 已按算法、tiling/grid、搬运、UB、流水、框架 API 排查。
 - [ ] 每轮只改一个主要优化点。
 - [ ] 构建或 JIT 编译通过。
-- [ ] 精度验证通过。
+- [ ] 正确性验证通过。
 - [ ] 失败 case 已按现象日志记录，文件中不写推断性结论。
 - [ ] 性能使用同一批 case。
 - [ ] 已输出基线、优化后、标杆三方对比。
+
