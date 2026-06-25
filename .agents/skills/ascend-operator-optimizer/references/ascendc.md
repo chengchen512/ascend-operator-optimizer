@@ -2,6 +2,13 @@
 
 本文件面向“已有 Ascend C 算子性能优化”。它不是完整 API 手册，而是从 Ascend/agent-skills 中蒸馏出的高频判断、排错路径和优化规则。需要代码模式时读取 `ascendc-examples.md`。
 
+细分知识包位于 `references/ascendc/`。按问题读取，不要每次加载所有文件：
+
+- `workflow.md`：上游多 skill 到当前单 harness 的映射。
+- `launch-profiles.md`：标准 AscendC、msopgen/aclnn dynamic、Cube、Vector launch profile。
+- `profiling.md`：profiler 采集、CSV 分析、软标签。
+- `tiling-grid.md`、`data-copy.md`、`api-usage.md`、`memory.md`、`pipeline.md`、`precision.md`：专项检查表。
+
 ## 读取目标
 
 优化前必须读完：
@@ -10,8 +17,20 @@
 - `op_kernel/*.cpp` 或 kernel 类实现。
 - 算子 `design.md`、shape/dtype 约束、测试和 benchmark。
 - TilingData 定义、TilingKey/TilingID 历史兼容逻辑、workspace 申请逻辑。
+- `operator-optim.json` 中的 `implementation.type`、`implementation.launch_profile`、`commands.launch_probe`。
 
 缺少上下文时不要改代码。不要用示例里的常量替代目标环境查询结果。
+
+## Launch Profile 先行
+
+AscendC launch 路径至少区分：
+
+- `ascendc-standard`：普通 ascend-kernel / `EXEC_KERNEL_CMD` 路径。
+- `ascendc-msopgen-aclnn-dynamic`：msopgen + aclnn custom op，必须先通过 launch coverage probe。
+- `ascendc-cube-matmul`：优先看 AIC/Cube、L0/L1/L0C、Fixpipe、BT/FP buffer。
+- `ascendc-vector`：优先看 AIV、UB、DataCopyPad、TQue、流水。
+
+如果 launch coverage probe 失败，不进入 kernel 数学、tiling 或性能优化；先修 launch path 或工程路径。
 
 ## 设计与 Tiling
 

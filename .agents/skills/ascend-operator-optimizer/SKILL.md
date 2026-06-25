@@ -41,6 +41,16 @@ inspect -> baseline -> diagnose -> one hypothesis -> patch
 │   ├── playbook.md
 │   ├── constraints.md
 │   ├── harness.md
+│   ├── ascendc/
+│   │   ├── workflow.md
+│   │   ├── tiling-grid.md
+│   │   ├── data-copy.md
+│   │   ├── api-usage.md
+│   │   ├── memory.md
+│   │   ├── pipeline.md
+│   │   ├── precision.md
+│   │   ├── profiling.md
+│   │   └── launch-profiles.md
 │   ├── ascendc.md
 │   ├── ascendc-examples.md
 │   └── sources.md
@@ -58,9 +68,18 @@ inspect -> baseline -> diagnose -> one hypothesis -> patch
    - `references/constraints.md`
    - `references/harness.md`
    - `references/hardware.md`
-3. 若目标是 Ascend C，先读取 `references/ascendc.md`。
-4. 若需要修改 Ascend C 源码，再读取 `references/ascendc-examples.md` 中相关代码模式。
-5. 若需要确认来源或外部资料边界，读取 `references/sources.md`。
+3. 若目标是 Ascend C，先读取 `references/ascendc.md` 和 `references/ascendc/workflow.md`。
+4. 按场景读取 AscendC knowledge pack：
+   - custom op launch 或 blockDim 异常：`references/ascendc/launch-profiles.md`
+   - 性能评估或 profiler 诊断：`references/ascendc/profiling.md`
+   - tiling/grid/tail：`references/ascendc/tiling-grid.md`
+   - GM/UB 搬运：`references/ascendc/data-copy.md`
+   - API/TQue/TBuf/Atomic：`references/ascendc/api-usage.md`
+   - UB/L1/L0/BT/FP buffer：`references/ascendc/memory.md`
+   - 流水重叠：`references/ascendc/pipeline.md`
+   - 精度或 MSSanitizer：`references/ascendc/precision.md`
+5. 若需要修改 Ascend C 源码，再读取 `references/ascendc-examples.md` 中相关代码模式。
+6. 若需要确认来源或外部资料边界，读取 `references/sources.md`。
 
 未完成目标仓库上下文读取前，不修改代码。
 
@@ -81,7 +100,7 @@ cp .agents/skills/ascend-operator-optimizer/assets/harness.example.json \
   operator-optim.json
 ```
 
-只编辑配置中的 `build`、`correctness`、`benchmark` 命令。benchmark 命令必须把 JSON 写入环境变量 `OPT_HARNESS_RESULT` 指向的路径。
+只编辑配置中的命令、实现元数据和本地 artifact globs。benchmark 命令必须把 JSON 写入环境变量 `OPT_HARNESS_RESULT` 指向的路径。
 
 ## Harness 契约
 
@@ -131,7 +150,9 @@ case 名称必须稳定。比较时只接受同一批 case；缺失、新增或�
 - 读取设计文档、说明文档或测试文档。
 - 读取目标算子完整源码。
 - 找到构建命令、正确性测试入口和性能测试入口。
-- 配好 `operator-optim.json`，并确认 benchmark 输出结构稳定。
+- 配好 `operator-optim.json` 的 `implementation.type` 和必要的 `implementation.launch_profile`。
+- 对 `ascendc-msopgen-aclnn-dynamic` 这类路径，必须配置并通过 `commands.launch_probe`。
+- 确认 benchmark 输出结构稳定。
 
 ## Baseline Gate
 
@@ -143,6 +164,18 @@ case 名称必须稳定。比较时只接受同一批 case；缺失、新增或�
 - 记录命令、环境、单位、warmup、repeat、统计方式和 profiler/trace 路径。
 
 没有基线时，不声明性能收益。
+
+## Harness Gate
+
+基础顺序：
+
+```text
+env_smoke -> build -> launch_probe -> correctness -> benchmark -> profile -> compare
+```
+
+- `env_smoke`、`launch_probe`、`profile` 是可选 gate。
+- `implementation.launch_profile=ascendc-msopgen-aclnn-dynamic` 时，`launch_probe` 默认必需。
+- `profile` 只生成诊断证据，不替代 benchmark compare。
 
 ## Diagnose
 

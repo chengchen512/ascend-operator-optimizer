@@ -26,6 +26,15 @@
 - `skills/ascendc-operator-precision-debug/`：GM offset、tail、FP32 upcast、异步同步、多核 tiling 等精度定位案例。
 - `skills/ascendc-operator-code-review/references/`：数值、指针、资源、输入校验、并发、接口兼容检查项。
 - `skills/ascendc-operator-mssanitizer/`：mssanitizer 使用边界和错误类型。
+- `skills/ascend-profiling-anomaly/`：kernel details、op statistic、trace gap、wait-anchor、AICPU 暴露/遮蔽等 profiling 异常分析方法。
+
+## 蒸馏到新架构
+
+- 端到端流程类 skill：蒸馏为 `references/ascendc/workflow.md`，不进入 harness 编排。
+- code-gen references：蒸馏为 `references/ascendc/api-usage.md`、`data-copy.md` 和 `ascendc-examples.md`。
+- performance references：蒸馏为 `tiling-grid.md`、`memory.md`、`pipeline.md`、`profiling.md`。
+- compile/precision/mssanitizer：蒸馏为 correctness/probe 规则和 `precision.md`。
+- profiling anomaly：蒸馏为 profile analyzer 的 clock accounting、bubble、wait-anchor 软标签。
 
 未纳入核心 references 的内容：完整项目初始化脚手架、长模板、完整报告样例、与 AscendC 优化无直接关系的 Catlass/Triton/ATB 资料。
 

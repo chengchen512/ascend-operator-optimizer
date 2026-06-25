@@ -1,6 +1,7 @@
 task:
   framework: ""   # ascend-c | triton-ascend | tilelang-ascend
   operator_name: ""
+  launch_profile: ""   # ascendc-standard | ascendc-msopgen-aclnn-dynamic | ascendc-cube-matmul | ascendc-vector
   target_repo: ""
   operator_dir: ""
   test_dir: ""
@@ -13,7 +14,9 @@ inputs:
   perf_cases: ""
 
 commands:
+  env_smoke: ""
   build_or_compile: ""
+  launch_probe: ""
   precision: ""
   performance: ""
   profiler: ""
@@ -29,9 +32,13 @@ measurement:
 
 artifacts:
   failure_logs_dir: ""
+  probes_dir: ""
+  profile_dir: ""
   baseline_report: ""
   precision_report: ""
   performance_report: ""
+  profile_analysis: ""
+  profile_summary: ""
   summary_report: ""
 
 gates:
@@ -44,6 +51,10 @@ gates:
     evidence: []
     notes: ""
   build:
+    status: pending
+    evidence: []
+    notes: ""
+  probes:
     status: pending
     evidence: []
     notes: ""
@@ -74,6 +85,11 @@ rounds:
       command: ""
       status: pending
       evidence: []
+    probes:
+      launch_coverage:
+        command: ""
+        status: pending
+        report: ""
     precision:
       command: ""
       status: pending

@@ -12,8 +12,9 @@ A single Codex Skill for measured Ascend operator performance optimization.
 The Skill implements this loop:
 
 ```text
-inspect -> baseline -> diagnose -> one hypothesis -> patch
-        -> correctness gate -> benchmark gate -> accept/revert -> repeat (max 3)
+inspect -> env_smoke -> build -> probes -> baseline -> diagnose
+        -> one hypothesis -> patch -> correctness -> benchmark
+        -> profile -> compare -> accept/revert -> repeat (max 3)
 ```
 
 Supported operator implementations:
@@ -34,6 +35,16 @@ Supported operator implementations:
 │   ├── playbook.md
 │   ├── constraints.md
 │   ├── harness.md
+│   ├── ascendc/
+│   │   ├── workflow.md
+│   │   ├── tiling-grid.md
+│   │   ├── data-copy.md
+│   │   ├── api-usage.md
+│   │   ├── memory.md
+│   │   ├── pipeline.md
+│   │   ├── precision.md
+│   │   ├── profiling.md
+│   │   └── launch-profiles.md
 │   ├── ascendc.md
 │   ├── ascendc-examples.md
 │   └── sources.md
@@ -61,7 +72,7 @@ cp .agents/skills/ascend-operator-optimizer/assets/harness.example.json \
   operator-optim.json
 ```
 
-Edit only the build, correctness, and benchmark commands. The benchmark command must write JSON to `$OPT_HARNESS_RESULT`.
+Edit only commands, implementation metadata, and local artifact globs. The benchmark command must write JSON to `$OPT_HARNESS_RESULT`.
 
 Start Codex with:
 
@@ -93,6 +104,13 @@ python .agents/skills/ascend-operator-optimizer/scripts/harness.py \
 
 Run records are stored under `.operator-optim/` and should normally be excluded from source control.
 
+Analyze an existing Ascend profiler trace directory:
+
+```bash
+python .agents/skills/ascend-operator-optimizer/scripts/harness.py \
+  profile-analyze --profile-dir .operator-optim/runs/<run-id>/profile
+```
+
 ## Benchmark result contract
 
 The benchmark command receives these environment variables:
@@ -102,6 +120,12 @@ The benchmark command receives these environment variables:
 - `OPT_HARNESS_ROOT`: repository root from the config file
 - `OPT_HARNESS_RUN_DIR`: artifact directory for this run
 - `OPT_HARNESS_RESULT`: JSON file path the benchmark command must write
+- `OPT_HARNESS_PROBE_RESULT`: JSON file path the launch probe command should write
+- `OPT_HARNESS_PROFILE_DIR`: directory for profiler traces
+- `OPT_HARNESS_PROFILE_RESULT`: optional JSON file path for profile command output
+- `OPT_HARNESS_IMPLEMENTATION_TYPE`: implementation type from config
+- `OPT_HARNESS_LAUNCH_PROFILE`: launch profile from config
+- `OPT_HARNESS_OP_NAME`: operator name from config
 
 Minimal result shape:
 
@@ -117,6 +141,22 @@ Minimal result shape:
 ```
 
 Case names and units must stay stable across baseline and evaluation. Missing, extra, or incomparable cases invalidate a performance claim.
+
+## AscendC launch profiles
+
+`operator-optim.json` can declare:
+
+```json
+{
+  "implementation": {
+    "type": "ascendc",
+    "launch_profile": "ascendc-msopgen-aclnn-dynamic",
+    "op_name": "OperatorName"
+  }
+}
+```
+
+For `ascendc-msopgen-aclnn-dynamic`, `commands.launch_probe` is required by default. The probe should exercise the real launch path and write coverage JSON to `$OPT_HARNESS_PROBE_RESULT`.
 
 ## Local compatibility helper
 

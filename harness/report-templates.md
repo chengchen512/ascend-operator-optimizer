@@ -14,6 +14,7 @@
 | 字段 | 值 |
 | --- | --- |
 | 实现类型 | <ascend-c / triton-ascend / tilelang-ascend> |
+| Launch Profile | <ascendc-standard / ascendc-msopgen-aclnn-dynamic / ascendc-cube-matmul / ascendc-vector / N/A> |
 | 算子名称 | <operator_name> |
 | 目标仓库 | <absolute_path> |
 | 源码提交 | <git_commit_or_N/A> |
@@ -32,6 +33,7 @@
 - 性能用例：`<path>`
 - 用例数量：`<N>`
 - 标杆路径：`<torch_npu_or_repo_baseline>`
+- Launch Probe：`<path_or_N/A>`
 
 ## 基线表
 
@@ -60,6 +62,7 @@
 | 字段 | 值 |
 | --- | --- |
 | 实现类型 | <ascend-c / triton-ascend / tilelang-ascend> |
+| Launch Profile | <launch_profile_or_N/A> |
 | 算子名称 | <operator_name> |
 | 源码提交 | <git_commit_or_N/A> |
 | 精度命令 | `<command>` |
@@ -102,6 +105,7 @@
 | 字段 | 值 |
 | --- | --- |
 | 实现类型 | <ascend-c / triton-ascend / tilelang-ascend> |
+| Launch Profile | <launch_profile_or_N/A> |
 | 算子名称 | <operator_name> |
 | 源码提交 | <git_commit_or_N/A> |
 | 性能用例 | `<path>` |
@@ -136,6 +140,19 @@
 | Case | 基线(us) | 优化后(us) | 变化 | 可观察现象 | 下一步核查 |
 | --- | ---: | ---: | ---: | --- | --- |
 | <case_id> | <value> | <value> | <percent> | <observed_symptom> | <next_check> |
+
+## Profile 诊断
+
+| 指标 | 值 |
+| --- | --- |
+| Trace 目录 | `<path_or_N/A>` |
+| Service(us) | <value_or_N/A> |
+| Device busy union(us) | <value_or_N/A> |
+| Underfeed ratio | <value_or_N/A> |
+| Largest internal bubble(us) | <value_or_N/A> |
+| Tags | <tag_list_or_N/A> |
+
+Profile 诊断只作为软信号；性能状态仍由同 case benchmark 对比决定。
 
 ## 决策
 

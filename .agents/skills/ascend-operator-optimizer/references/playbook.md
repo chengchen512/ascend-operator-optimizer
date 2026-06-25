@@ -17,6 +17,9 @@ Before modifying code:
 - Identify implementation type: `ascend-c`, `triton-ascend`, or `tilelang-ascend`.
 - Read target repository instructions, README, build scripts, tests, benchmark entry points, and target operator source.
 - Find the correctness command and benchmark command.
+- For Ascend C, identify `implementation.launch_profile`.
+- For msopgen/aclnn dynamic launch paths, configure and pass `launch_probe`
+  before kernel math or tiling optimization.
 - Identify benchmark cases, dtype coverage, shape coverage, reference path, profiler, unit, warmup/repeat/active, statistic, and trace path.
 
 Do not patch before this gate is complete.
@@ -40,6 +43,16 @@ Before optimization:
 6. Framework-specific API constraints.
 
 Output candidate issues ordered by expected payoff. Choose one hypothesis per round.
+
+For Ascend C launch anomalies, use this early fork:
+
+```text
+launch_probe fails -> fix launch path/profile first, no benchmark
+launch_probe passes -> continue tiling/data movement/UB/pipeline diagnosis
+```
+
+Profiler evidence may reprioritize the list, but it is a soft diagnostic
+signal. Do not accept a patch from profiler tags alone.
 
 ## Patch Round
 
@@ -75,6 +88,11 @@ Case | Shape | DType | Mode | Baseline | Candidate | Reference | Candidate/Basel
 ```
 
 Conclusions must be based on the table across cases, not on a single fastest result.
+
+If `profile` is configured, run it after benchmark and before final reporting.
+Use `profile_analysis.json` for facts such as underfeed ratio, internal bubbles,
+top kernels, and wait-anchor candidates. Keep root-cause language tentative
+unless code evidence and trace evidence agree.
 
 ## Failure Logs
 

@@ -11,6 +11,8 @@ test/
 ├── optim_task.yaml
 ├── failure_logs/
 ├── perf_cases.jsonl
+├── probes/
+├── profile/
 ├── baseline_report.md
 ├── precision_report.md
 ├── performance_report.md
@@ -26,6 +28,8 @@ test/
 | `optim_task.yaml` | 实现类型、当前任务、命令、阶段状态、每轮结果 |
 | `failure_logs/` | 构建、精度、性能失败日志和原始片段 |
 | `perf_cases.jsonl` | 性能 case，优化前后必须复用 |
+| `probes/` | env smoke、launch coverage、mssanitizer 等 probe 产物 |
+| `profile/` | profiler trace、`profile_analysis.json`、`profile_summary.md` |
 | `baseline_report.md` | 优化前性能基线 |
 | `precision_report.md` | 优化后精度报告 |
 | `performance_report.md` | 优化后性能报告 |
@@ -50,7 +54,7 @@ test/
 `optim_task.yaml` 至少维护这些阶段：
 
 ```text
-context -> baseline -> diagnose -> patch -> build -> precision -> performance -> summary
+context -> env_smoke -> build -> probes -> baseline -> diagnose -> patch -> precision -> performance -> profile -> summary
 ```
 
 每个阶段记录：
@@ -86,11 +90,13 @@ Case | Shape | DType | 基线(us) | 优化后(us) | 标杆(us) | 优化后/基�
 `optim_task.yaml` 必须记录：
 
 - `framework`: `ascend-c` / `triton-ascend` / `tilelang-ascend`
+- `launch_profile`: `ascendc-standard` / `ascendc-msopgen-aclnn-dynamic` / `ascendc-cube-matmul` / `ascendc-vector`
 - `operator_name`
 - `operator_files`
 - `precision_command`
 - `performance_command`
 - `profiler`
+- `probes`
 - `measurement`
 - `failure_logs`
 
@@ -103,6 +109,27 @@ Case | Shape | DType | 基线(us) | 优化后(us) | 标杆(us) | 优化后/基�
 - `kernel_name`
 - `statistic`
 - `trace_dir`
+
+## AscendC Probe 规则
+
+AscendC 目标必须记录 `implementation.launch_profile`。对 `ascendc-msopgen-aclnn-dynamic`，性能优化前必须先通过 launch coverage probe：
+
+```text
+constant-fill kernel -> blockDim > 1 -> 检查输出覆盖率 100% -> 记录 GetBlockIdx/GetBlockNum
+```
+
+probe 失败时，不进入 benchmark；先修 launch path、工程路径或 block 分配策略。
+
+## Profile 规则
+
+profile 是诊断，不是性能结论。推荐采集并保存：
+
+- `kernel_details.csv`
+- `op_statistic.csv`
+- `profile_analysis.json`
+- `profile_summary.md`
+
+报告可以使用 underfeed ratio、internal bubble、wait-anchor candidate 等事实，但接受/回退修改只看 correctness 和 comparable benchmark。
 
 ## Round 字段
 
@@ -126,6 +153,11 @@ Case | Shape | DType | 基线(us) | 优化后(us) | 标杆(us) | 优化后/基�
     command: ""
     status: pending
     evidence: []
+  probes:
+    launch_coverage:
+      command: ""
+      status: pending
+      report: ""
   precision:
     command: ""
     status: pending

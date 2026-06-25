@@ -8,6 +8,7 @@
 - Correctness failed but benchmark is being run or reported.
 - Baseline and candidate benchmark use different cases.
 - Reference/baseline path does not execute on NPU.
+- Required `launch_probe` failed, is missing, or did not write structured JSON.
 - Patch requires unrelated public build/tooling/operator changes.
 
 ## General Prohibitions
@@ -18,6 +19,9 @@
 - Do not use external Python composition to bypass the target implementation.
 - Do not use one benchmark sample as an improvement claim.
 - Do not maintain multiple inconsistent benchmark case formats.
+- Do not use profiler tags as a performance improvement claim.
+- Do not treat profiler wait time as kernel busy time.
+- Do not profile different cases from the benchmark case set and compare them.
 
 ## Ascend C Prohibitions
 
@@ -39,6 +43,7 @@
 - Do not leave class members or stack state uninitialized in kernel paths.
 - Do not use AtomicAdd on dirty GM/UB data or forget to restore AtomicNone.
 - Do not dereference optional input desc/tensor or allocated output/workspace before null checks.
+- Do not assume `GetBlockIdx()` / `GetBlockNum()` ordinary multi-block semantics on msopgen/aclnn dynamic custom-op paths before `launch_coverage_probe` passes.
 
 ## Triton-Ascend Prohibitions
 
