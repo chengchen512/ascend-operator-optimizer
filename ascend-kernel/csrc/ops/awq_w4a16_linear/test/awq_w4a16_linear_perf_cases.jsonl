@@ -1,0 +1,2 @@
+{"name":"small_probe","m":2,"k":256,"n":256,"rtol":0.01,"atol":0.02,"warmup":5,"repeat":20}
+{"name":"target_benchmark","m":16,"k":4096,"n":22016,"rtol":0.01,"atol":0.02,"warmup":100,"repeat":1000}

@@ -1,0 +1,13 @@
+.agents/
+**/__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+ascend-kernel/build/
+ascend-kernel/output/
+ascend-kernel/python/ascend_kernel/build/
+ascend-kernel/python/ascend_kernel/dist/
+*.egg-info/
