@@ -51,6 +51,8 @@ inspect -> baseline -> diagnose -> one hypothesis -> patch
 │   │   ├── precision.md
 │   │   ├── profiling.md
 │   │   └── launch-profiles.md
+│   ├── cases/
+│   │   └── awq-w4a16-ascendc.md
 │   ├── ascendc.md
 │   ├── ascendc-examples.md
 │   └── sources.md
@@ -78,6 +80,7 @@ inspect -> baseline -> diagnose -> one hypothesis -> patch
    - UB/L1/L0/BT/FP buffer：`references/ascendc/memory.md`
    - 流水重叠：`references/ascendc/pipeline.md`
    - 精度或 MSSanitizer：`references/ascendc/precision.md`
+   - AWQ/W4A16、int4 unpack、no-cache 反量化、TSCM/Cube/MMAD：`references/cases/awq-w4a16-ascendc.md`
 5. 若需要修改 Ascend C 源码，再读取 `references/ascendc-examples.md` 中相关代码模式。
 6. 若需要确认来源或外部资料边界，读取 `references/sources.md`。
 

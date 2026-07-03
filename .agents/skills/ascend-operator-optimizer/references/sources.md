@@ -6,10 +6,16 @@
 
 - `knowledge/ascend-operator-knowledge.md`
 - `knowledge/constraints.md`
-- `knowledge/ascendc-agent-skills-distilled.md`
 - `harness/optim-harness.md`
 - `harness/report-templates.md`
 - `harness/task-template.yaml`
+
+## AWQ W4A16 经验来源
+
+- `knowledge/awq-w4a16-ascendc-experience.md`：本次 AWQ W4A16 AscendC 优化总复盘。
+- `knowledge/awq-skill-usage.md`：实际使用 skill、远端目录、编译测试和性能结果记录。
+- `knowledge/awq-w4a16/`：设计文档、远端测试报告、baseline 与优化摘要。
+- `reference/skills/`：本次实际读取和使用过的 skill 内容快照，不含连接密码、token、私钥或本地凭据。
 
 ## 外部来源
 

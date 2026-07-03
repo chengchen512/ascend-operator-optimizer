@@ -45,12 +45,15 @@ Supported operator implementations:
 │   │   ├── precision.md
 │   │   ├── profiling.md
 │   │   └── launch-profiles.md
+│   ├── cases/
+│   │   └── awq-w4a16-ascendc.md
 │   ├── ascendc.md
 │   ├── ascendc-examples.md
 │   └── sources.md
 └── scripts/harness.py
 
 knowledge/   # legacy/source material, not required by the copied Skill
+reference/   # archived source skill contents used by the AWQ W4A16 optimization
 harness/     # legacy task/report templates, not required by the copied Skill
 optimctl     # legacy local helper for the old task-template flow
 ```
@@ -173,4 +176,16 @@ New optimization runs should prefer the self-contained Skill harness above.
 ## Scope
 
 The compact knowledge base covers the common Ascend performance model, tiling, data movement, memory residency, pipeline overlap, kernel constraints, correctness gates, benchmark comparability, and Ascend C-specific operator notes. Device-specific constants must be obtained from the active environment rather than copied into code.
+
+## Integrated AWQ W4A16 experience
+
+This branch adds a concrete AscendC AWQ W4A16 optimization case:
+
+- `.agents/skills/ascend-operator-optimizer/references/cases/awq-w4a16-ascendc.md`: distilled no-cache AWQ, workspace-aware wrapper, pack8 unpack, TSCM/Cube/MMAD lessons.
+- `knowledge/awq-w4a16-ascendc-experience.md`: full Chinese experience report.
+- `knowledge/awq-skill-usage.md`: skill usage, remote paths, build/test/performance results.
+- `knowledge/awq-w4a16/`: copied design and benchmark reports.
+- `reference/skills/`: archived contents of the skills actually used in the AWQ work.
+
+The main reusable constraint is: when quantization is meant to save HBM and bandwidth, do not treat a persistent dequantized half-weight cache as an acceptable final optimization.
 

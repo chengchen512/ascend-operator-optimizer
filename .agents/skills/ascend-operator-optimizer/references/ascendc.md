@@ -8,6 +8,7 @@
 - `launch-profiles.md`：标准 AscendC、msopgen/aclnn dynamic、Cube、Vector launch profile。
 - `profiling.md`：profiler 采集、CSV 分析、软标签。
 - `tiling-grid.md`、`data-copy.md`、`api-usage.md`、`memory.md`、`pipeline.md`、`precision.md`：专项检查表。
+- `cases/awq-w4a16-ascendc.md`：AWQ W4A16 no-cache、workspace-aware wrapper、pack8 unpack、TSCM/Cube/MMAD 探索案例。
 
 ## 读取目标
 
@@ -141,6 +142,14 @@ FP16/BF16 在复杂数学、归约、归一化、排序、池化等路径中应�
 - BT Buffer：bias 可融合进 Mmad 时，不单独走 CO1->GM->UB->Add。
 - FP Buffer/Fixpipe：量化参数可放在搬出路径上融合，避免 UB 单独量化再写 GM。
 - Matmul AtomicAdd：需要把结果累加到 GM 上已有矩阵时，优先考虑搬出路径原子累加。
+
+量化矩阵类算子还要额外检查：
+
+- no-cache 是需求约束时，不把完整反量化 half 权重常驻在 HBM。
+- 如果反量化 block 写 GM 再给 matmul 消费，性能上限通常受 HBM 中间权重写读和多次 matmul 调度限制。
+- 先用公开 AscendC API 做可编译 probe，再推进 TSCM/Cube/MMAD；内部 CMCT/WQMM 模板缺私有符号时停止。
+- workspace-aware wrapper 要核对 kernel 参数顺序，`HAVE_WORKSPACE + HAVE_TILING` 下 workspace 通常是倒数第二个参数，tiling 是最后一个参数。
+- 小 shape probe 的 host tiling cache 只能缓存只读 tiling，不应扩展成 dequant weight cache。
 
 ## 精度与运行时调试
 
