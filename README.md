@@ -186,6 +186,7 @@ This branch adds a concrete AscendC AWQ W4A16 optimization case:
 - `knowledge/awq-skill-usage.md`: skill usage, remote paths, build/test/performance results.
 - `knowledge/awq-w4a16/`: copied design and benchmark reports.
 - `reference/skills/`: archived contents of the skills actually used in the AWQ work.
+- `reference/asc-devkit-api-9.0.0/docs/api/`: offline snapshot of the Ascend C API docs from GitCode `cann/asc-devkit` branch `9.0.0`.
 
 The main reusable constraint is: when quantization is meant to save HBM and bandwidth, do not treat a persistent dequantized half-weight cache as an acceptable final optimization.
 

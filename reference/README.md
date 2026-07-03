@@ -7,6 +7,9 @@
 ```text
 reference/
 ├── README.md
+├── asc-devkit-api-9.0.0/
+│   ├── SOURCE.md
+│   └── docs/api/
 └── skills/
     ├── ascendc-operator-design/
     ├── ascendc-operator-performance-optim/
@@ -31,6 +34,14 @@ reference/
 | `catlass-operator-design` | `SKILL.md`, `references/` | 早期评估 GEMM/CATLASS 路线是否适用。 |
 | `ssh-remote-connect` | `SKILL.md`, 连接执行脚本和 `connection.env.example` | Windows/PowerShell 下通过 Paramiko 连接远端 Ascend 服务器并执行测试。 |
 
+## 官方 API 文档快照
+
+| 路径 | 来源 | 用途 |
+|---|---|---|
+| `reference/asc-devkit-api-9.0.0/docs/api/` | `https://gitcode.com/cann/asc-devkit/tree/9.0.0/docs/api` | 离线查阅 Ascend C API 入口、接口参数、约束和配图。 |
+
+快照来源记录见 `reference/asc-devkit-api-9.0.0/SOURCE.md`。本次下载内容包含 2915 个文件，其中 Markdown 2090 个、PNG 823 个。
+
 ## 安全排除项
 
 以下内容未归档：
@@ -47,6 +58,7 @@ reference/
 - `knowledge/awq-skill-usage.md`: 本项目中 skill 的实际使用记录和关键测试结果。
 - `knowledge/awq-w4a16-ascendc-experience.md`: 本次 AWQ W4A16 AscendC 算子优化经验总结。
 - `.agents/skills/ascend-operator-optimizer/references/cases/awq-w4a16-ascendc.md`: 面向 optimizer skill 的压缩案例。
+- `reference/asc-devkit-api-9.0.0/docs/api/README.md`: Ascend C API 官方文档快照入口。
 
 ## 使用建议
 
