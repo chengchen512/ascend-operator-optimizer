@@ -8,6 +8,7 @@
 - `launch-profiles.md`：标准 AscendC、msopgen/aclnn dynamic、Cube、Vector launch profile。
 - `profiling.md`：profiler 采集、CSV 分析、软标签。
 - `tiling-grid.md`、`data-copy.md`、`api-usage.md`、`memory.md`、`pipeline.md`、`precision.md`：专项检查表。
+- `api-lookup.md`：需要精确 API 签名、参数单位或重载证据时使用官方 API 快照。
 - `cases/awq-w4a16-ascendc.md`：AWQ W4A16 no-cache、workspace-aware wrapper、pack8 unpack、TSCM/Cube/MMAD 探索案例。
 
 ## 读取目标
@@ -21,6 +22,8 @@
 - `operator-optim.json` 中的 `implementation.type`、`implementation.launch_profile`、`commands.launch_probe`。
 
 缺少上下文时不要改代码。不要用示例里的常量替代目标环境查询结果。
+
+需要确认 API 是否存在、参数单位或 overload 时，先按 `api-lookup.md` 查离线 API 快照，再改代码。尤其是 DataCopy/ND2NZ、TSCM/Matmul、AntiQuant tmp buffer、workspace 这类 API，不允许只靠记忆补签名。
 
 ## Launch Profile 先行
 

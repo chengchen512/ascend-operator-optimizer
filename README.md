@@ -35,6 +35,7 @@ Supported operator implementations:
 │   ├── playbook.md
 │   ├── constraints.md
 │   ├── harness.md
+│   ├── api-lookup.md
 │   ├── ascendc/
 │   │   ├── workflow.md
 │   │   ├── tiling-grid.md
@@ -50,7 +51,9 @@ Supported operator implementations:
 │   ├── ascendc.md
 │   ├── ascendc-examples.md
 │   └── sources.md
-└── scripts/harness.py
+└── scripts/
+    ├── harness.py
+    └── api_lookup.py
 
 knowledge/   # legacy/source material, not required by the copied Skill
 reference/   # archived source skill contents used by the AWQ W4A16 optimization
@@ -112,6 +115,13 @@ Analyze an existing Ascend profiler trace directory:
 ```bash
 python .agents/skills/ascend-operator-optimizer/scripts/harness.py \
   profile-analyze --profile-dir .operator-optim/runs/<run-id>/profile
+```
+
+Search the optional offline Ascend C API snapshot without loading all API files:
+
+```bash
+python .agents/skills/ascend-operator-optimizer/scripts/api_lookup.py DataCopyPad
+python .agents/skills/ascend-operator-optimizer/scripts/api_lookup.py TSCM Matmul
 ```
 
 ## Benchmark result contract
@@ -187,6 +197,7 @@ This branch adds a concrete AscendC AWQ W4A16 optimization case:
 - `knowledge/awq-w4a16/`: copied design and benchmark reports.
 - `reference/skills/`: archived contents of the skills actually used in the AWQ work.
 - `reference/asc-devkit-api-9.0.0/docs/api/`: offline snapshot of the Ascend C API docs from GitCode `cann/asc-devkit` branch `9.0.0`.
+- `.agents/skills/ascend-operator-optimizer/references/api-lookup.md`: lookup protocol that tells agents how to query the API snapshot efficiently.
 
 The main reusable constraint is: when quantization is meant to save HBM and bandwidth, do not treat a persistent dequantized half-weight cache as an acceptable final optimization.
 

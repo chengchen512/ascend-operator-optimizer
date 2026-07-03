@@ -17,6 +17,7 @@
 - `knowledge/awq-w4a16/`：设计文档、远端测试报告、baseline 与优化摘要。
 - `reference/skills/`：本次实际读取和使用过的 skill 内容快照，不含连接密码、token、私钥或本地凭据。
 - `reference/asc-devkit-api-9.0.0/docs/api/`：GitCode `cann/asc-devkit` 9.0.0 分支 `docs/api` 官方 API 文档快照，来源 commit `c3e271c396ca036aa76be5745b4b4c242eeb06a2`。该目录不属于可复制 Skill 的最小依赖，只作为本仓库内离线查阅资料。
+- `references/api-lookup.md` 与 `scripts/api_lookup.py`：把官方 API 快照接入 Skill 的按需检索流程，避免 agent 全量读取 API 文档。
 
 ## 外部来源
 

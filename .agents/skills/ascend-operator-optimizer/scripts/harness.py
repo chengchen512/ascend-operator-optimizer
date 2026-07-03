@@ -875,6 +875,7 @@ def cmd_doctor(args: argparse.Namespace) -> int:
         ("references/playbook.md", root / "references" / "playbook.md"),
         ("references/constraints.md", root / "references" / "constraints.md"),
         ("references/harness.md", root / "references" / "harness.md"),
+        ("references/api-lookup.md", root / "references" / "api-lookup.md"),
         ("references/ascendc/workflow.md", root / "references" / "ascendc" / "workflow.md"),
         ("references/ascendc/profiling.md", root / "references" / "ascendc" / "profiling.md"),
         ("references/ascendc/launch-profiles.md", root / "references" / "ascendc" / "launch-profiles.md"),
@@ -882,6 +883,7 @@ def cmd_doctor(args: argparse.Namespace) -> int:
         ("references/ascendc-examples.md", root / "references" / "ascendc-examples.md"),
         ("references/sources.md", root / "references" / "sources.md"),
         ("scripts/harness.py", root / "scripts" / "harness.py"),
+        ("scripts/api_lookup.py", root / "scripts" / "api_lookup.py"),
     ]
     ok = True
     for name, path in checks:

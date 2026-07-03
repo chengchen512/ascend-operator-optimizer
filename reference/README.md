@@ -42,6 +42,15 @@ reference/
 
 快照来源记录见 `reference/asc-devkit-api-9.0.0/SOURCE.md`。本次下载内容包含 2915 个文件，其中 Markdown 2090 个、PNG 823 个。
 
+推荐检索入口：
+
+```bash
+python .agents/skills/ascend-operator-optimizer/scripts/api_lookup.py DataCopyPad
+python .agents/skills/ascend-operator-optimizer/scripts/api_lookup.py TSCM TQueBind Matmul
+```
+
+检索流程和查询词路由见 `.agents/skills/ascend-operator-optimizer/references/api-lookup.md`。不要让 agent 全量读取 `docs/api`，应先按 API 名称、结构体名、参数名或中文主题检索，再打开最相关的 1 到 3 个文档。
+
 ## 安全排除项
 
 以下内容未归档：
@@ -58,6 +67,7 @@ reference/
 - `knowledge/awq-skill-usage.md`: 本项目中 skill 的实际使用记录和关键测试结果。
 - `knowledge/awq-w4a16-ascendc-experience.md`: 本次 AWQ W4A16 AscendC 算子优化经验总结。
 - `.agents/skills/ascend-operator-optimizer/references/cases/awq-w4a16-ascendc.md`: 面向 optimizer skill 的压缩案例。
+- `.agents/skills/ascend-operator-optimizer/references/api-lookup.md`: API 快照检索协议。
 - `reference/asc-devkit-api-9.0.0/docs/api/README.md`: Ascend C API 官方文档快照入口。
 
 ## 使用建议

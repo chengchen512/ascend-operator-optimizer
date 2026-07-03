@@ -41,6 +41,7 @@ inspect -> baseline -> diagnose -> one hypothesis -> patch
 │   ├── playbook.md
 │   ├── constraints.md
 │   ├── harness.md
+│   ├── api-lookup.md
 │   ├── ascendc/
 │   │   ├── workflow.md
 │   │   ├── tiling-grid.md
@@ -56,10 +57,12 @@ inspect -> baseline -> diagnose -> one hypothesis -> patch
 │   ├── ascendc.md
 │   ├── ascendc-examples.md
 │   └── sources.md
-└── scripts/harness.py
+└── scripts/
+    ├── harness.py
+    └── api_lookup.py
 ```
 
-不要依赖目标仓库之外的 `knowledge/` 或 `harness/` 目录。若当前仓库中仍有旧版资料，只把它们当作人工参考，不作为执行契约。
+不要依赖目标仓库之外的 `knowledge/` 或 `harness/` 目录。若当前仓库中仍有旧版资料，只把它们当作人工参考，不作为执行契约。根目录 `reference/asc-devkit-api-9.0.0/docs/api` 是可选的官方 API 离线快照，不属于复制 Skill 的最小依赖；需要精确 API 证据时按 `references/api-lookup.md` 查找。
 
 ## 启动前必读
 
@@ -70,6 +73,7 @@ inspect -> baseline -> diagnose -> one hypothesis -> patch
    - `references/constraints.md`
    - `references/harness.md`
    - `references/hardware.md`
+   - `references/api-lookup.md`
 3. 若目标是 Ascend C，先读取 `references/ascendc.md` 和 `references/ascendc/workflow.md`。
 4. 按场景读取 AscendC knowledge pack：
    - custom op launch 或 blockDim 异常：`references/ascendc/launch-profiles.md`
@@ -81,8 +85,9 @@ inspect -> baseline -> diagnose -> one hypothesis -> patch
    - 流水重叠：`references/ascendc/pipeline.md`
    - 精度或 MSSanitizer：`references/ascendc/precision.md`
    - AWQ/W4A16、int4 unpack、no-cache 反量化、TSCM/Cube/MMAD：`references/cases/awq-w4a16-ascendc.md`
-5. 若需要修改 Ascend C 源码，再读取 `references/ascendc-examples.md` 中相关代码模式。
-6. 若需要确认来源或外部资料边界，读取 `references/sources.md`。
+5. 若需要确认 Ascend C API 签名、重载、参数单位或限制，按 `references/api-lookup.md` 使用 `scripts/api_lookup.py` 或 `rg` 查官方 API 快照；不要全量读取 `docs/api`。
+6. 若需要修改 Ascend C 源码，再读取 `references/ascendc-examples.md` 中相关代码模式。
+7. 若需要确认来源或外部资料边界，读取 `references/sources.md`。
 
 未完成目标仓库上下文读取前，不修改代码。
 

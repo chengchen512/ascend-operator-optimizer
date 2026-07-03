@@ -5,6 +5,7 @@
 - GM <-> UB 优先使用 `DataCopyPad`。
 - `DataCopy` 只用于确定对齐的原型路径、UB 内部拷贝，或目标仓库已有稳定模式。
 - GlobalTensor 下标是元素偏移，不是字节偏移。
+- 涉及 ND2NZ/NZ2ND、非连续搬运或 GM/UB/TSCM 目的位置变化时，按 `../api-lookup.md` 查官方 `DataCopy`/`DataCopyPad` 文档确认 overload，不要假设源和目的反向后仍可编译。
 
 ## 参数单位
 

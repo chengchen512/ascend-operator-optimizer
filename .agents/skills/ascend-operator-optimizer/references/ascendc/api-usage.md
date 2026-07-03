@@ -6,6 +6,7 @@
 - `TQue` 用于有生产/消费关系的 GM/UB 队列。
 - `TBuf` 用于纯计算临时区、FP32 工作区、归约 tmp。
 - `TQueBind` 适合纯搬运或 VECIN/VECOUT 可复用路径。
+- 修改 API 调用前如需确认签名、模板参数、重载或限制，按 `../api-lookup.md` 检索官方 API 快照，不要全量读取 `docs/api`。
 
 ## Vector API
 
