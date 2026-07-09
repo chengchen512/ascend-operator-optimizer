@@ -1,7 +1,8 @@
 # codex-ascend-operator-optimizer
 
-A Codex Skill project for measured Ascend operator performance optimization,
-with a recorded AWQ W4A16 AscendC case study.
+A Codex Skill project for measured Ascend operator performance optimization.
+It packages the optimization workflow, compact references, and validation
+harness needed to optimize Ascend operator implementations repeatably.
 
 ## Design
 
@@ -28,37 +29,17 @@ Supported operator implementations:
 
 ```text
 .agents/skills/ascend-operator-optimizer/
-├── SKILL.md
-├── assets/harness.example.json
-├── references/
-│   ├── INDEX.md
-│   ├── hardware.md
-│   ├── playbook.md
-│   ├── constraints.md
-│   ├── harness.md
-│   ├── ascendc/
-│   │   ├── workflow.md
-│   │   ├── tiling-grid.md
-│   │   ├── data-copy.md
-│   │   ├── api-usage.md
-│   │   ├── memory.md
-│   │   ├── pipeline.md
-│   │   ├── precision.md
-│   │   ├── profiling.md
-│   │   ├── awq-w4a16.md
-│   │   └── launch-profiles.md
-│   ├── ascendc.md
-│   ├── ascendc-examples.md
-│   └── sources.md
-└── scripts/harness.py
+├── SKILL.md           # entry point and routing rules
+├── assets/            # harness config example
+├── references/        # optimization knowledge base
+└── scripts/           # benchmark/profile harness
 
-ascend-kernel/  # AWQ W4A16 AscendC operator workspace and probes
-reference/      # copied skills/API references used during the AWQ work
-AWQ_ASCENDC_OPT_EXPERIENCE.md
+ascend-kernel/  # local AscendC operator workspace and probes
+reference/      # curated skills/API references
 skill_usage.md
-knowledge/   # legacy/source material, not required by the copied Skill
-harness/     # legacy task/report templates, not required by the copied Skill
-optimctl     # legacy local helper for the old task-template flow
+knowledge/       # legacy/source material
+harness/         # legacy task/report templates
+optimctl         # compatibility helper for the old workflow
 ```
 
 `_work/` and `asc-devkit/` are local experiment/upstream clones and are ignored.
@@ -86,41 +67,6 @@ Start Codex with:
 
 ```text
 $ascend-operator-optimizer optimize this operator
-```
-
-## AWQ W4A16 case study
-
-The repository also carries the concrete Dense AWQ W4A16 Linear optimization
-run used to improve the Skill references.
-
-Key files:
-
-- `ascend-kernel/csrc/ops/awq_w4a16_linear/design.md`
-- `ascend-kernel/csrc/ops/awq_w4a16_linear/remote_test_report.md`
-- `ascend-kernel/csrc/ops/awq_w4a16_linear/op_host/awq_w4a16_linear.cpp`
-- `ascend-kernel/csrc/ops/awq_w4a16_linear/op_kernel/`
-- `skill_usage.md`
-- `AWQ_ASCENDC_OPT_EXPERIENCE.md`
-- `reference/README.md`
-
-Accepted current route:
-
-- Host keeps the Python API unchanged.
-- `AWQ_ASCENDC_ROUTE=auto` selects the stable VECOUT/Cube route for legal
-  `M<=16, K%256==0, N%128==0` shapes.
-- Auto falls back to scalar direct custom compute for broader shapes; this
-  fallback writes final output only and does not materialize a dequantized B
-  tile in GM.
-- Diagnostic `stream` and `split` routes remain explicit only because they use
-  GM scratch for antiquantized half tiles.
-
-Latest recorded target result:
-
-```text
-[16,4096,22016]
-vendor WQMM:      123.276 us
-custom candidate: 298.328 us
-candidate/vendor: 2.42x latency
 ```
 
 ## Harness commands
@@ -154,23 +100,9 @@ python .agents/skills/ascend-operator-optimizer/scripts/harness.py \
   profile-analyze --profile-dir .operator-optim/runs/<run-id>/profile
 ```
 
-## Benchmark result contract
+## Benchmark Contract
 
-The benchmark command receives these environment variables:
-
-- `OPT_HARNESS_PHASE`: `baseline` or `evaluate`
-- `OPT_HARNESS_LABEL`: stable run label
-- `OPT_HARNESS_ROOT`: repository root from the config file
-- `OPT_HARNESS_RUN_DIR`: artifact directory for this run
-- `OPT_HARNESS_RESULT`: JSON file path the benchmark command must write
-- `OPT_HARNESS_PROBE_RESULT`: JSON file path the launch probe command should write
-- `OPT_HARNESS_PROFILE_DIR`: directory for profiler traces
-- `OPT_HARNESS_PROFILE_RESULT`: optional JSON file path for profile command output
-- `OPT_HARNESS_IMPLEMENTATION_TYPE`: implementation type from config
-- `OPT_HARNESS_LAUNCH_PROFILE`: launch profile from config
-- `OPT_HARNESS_OP_NAME`: operator name from config
-
-Minimal result shape:
+The benchmark command must write a JSON file to `$OPT_HARNESS_RESULT`:
 
 ```json
 {
@@ -184,34 +116,6 @@ Minimal result shape:
 ```
 
 Case names and units must stay stable across baseline and evaluation. Missing, extra, or incomparable cases invalidate a performance claim.
-
-## AscendC launch profiles
-
-`operator-optim.json` can declare:
-
-```json
-{
-  "implementation": {
-    "type": "ascendc",
-    "launch_profile": "ascendc-msopgen-aclnn-dynamic",
-    "op_name": "OperatorName"
-  }
-}
-```
-
-For `ascendc-msopgen-aclnn-dynamic`, `commands.launch_probe` is required by default. The probe should exercise the real launch path and write coverage JSON to `$OPT_HARNESS_PROBE_RESULT`.
-
-## Local compatibility helper
-
-`./optimctl` is kept for compatibility with the earlier task-file workflow:
-
-```bash
-./optimctl doctor
-./optimctl init --task-dir /path/to/repo/test --framework ascend-c --operator-name <op_name>
-./optimctl status --task-dir /path/to/repo/test
-```
-
-New optimization runs should prefer the self-contained Skill harness above.
 
 ## Scope
 
