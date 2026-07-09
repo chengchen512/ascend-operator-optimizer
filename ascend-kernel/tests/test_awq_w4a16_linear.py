@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 import argparse
 import json
-import os
 import pathlib
 
 import torch
@@ -18,8 +17,8 @@ except ImportError:
 
 
 def make_inputs(m: int, k: int, n: int):
-    assert k % 128 == 0 and k > 128 and n % 8 == 0
-    torch.manual_seed(20260630 + m + k + n)
+    assert k % 128 == 0 and n % 8 == 0
+    torch.manual_seed(20260703 + m + k + n)
     x = torch.randn((m, k), device="npu", dtype=torch.float16).contiguous()
     w_int = torch.randint(-8, 8, (k, n), dtype=torch.int32)
     weight = torch_npu.npu_convert_weight_to_int4pack(w_int.npu().contiguous()).contiguous()
@@ -57,33 +56,27 @@ def time_us(fn, warmup: int, repeat: int):
     return float(start.elapsed_time(end) * 1000.0 / repeat)
 
 
-def run_case(m: int, k: int, n: int, warmup: int, repeat: int, benchmark: bool, rtol: float, atol: float):
-    x, weight, scale, offset = make_inputs(m, k, n)
+def run_case(args):
+    x, weight, scale, offset = make_inputs(args.m, args.k, args.n)
     ref = vendor_awq(x, weight, scale, offset)
     out = candidate_awq(x, weight, scale, offset)
     torch.npu.synchronize()
-    torch.testing.assert_close(out, ref, rtol=rtol, atol=atol)
+    torch.testing.assert_close(out, ref, rtol=args.rtol, atol=args.atol)
     diff = (out - ref).abs().float()
     result = {
-        "shape": [m, k, n],
+        "shape": [args.m, args.k, args.n],
         "max_abs": float(diff.max().item()),
         "mean_abs": float(diff.mean().item()),
+        "rtol": args.rtol,
+        "atol": args.atol,
         "correctness": "pass",
-        "rtol": rtol,
-        "atol": atol,
-        "route_env": os.environ.get("AWQ_ASCENDC_ROUTE", "stream"),
-        "stream_tile_n": os.environ.get("AWQ_STREAM_N_TILE", "12288"),
     }
-    if benchmark:
-        vendor_us = time_us(lambda: vendor_awq(x, weight, scale, offset), warmup, repeat)
-        candidate_us = time_us(lambda: candidate_awq(x, weight, scale, offset), warmup, repeat)
-        result.update({
-            "warmup": warmup,
-            "repeat": repeat,
-            "candidate_us": candidate_us,
-            "vendor_us": vendor_us,
-            "candidate_over_vendor": candidate_us / vendor_us,
-        })
+    if args.benchmark:
+        result["vendor_us"] = time_us(lambda: vendor_awq(x, weight, scale, offset), args.warmup, args.repeat)
+        result["candidate_us"] = time_us(lambda: candidate_awq(x, weight, scale, offset), args.warmup, args.repeat)
+        result["candidate_over_vendor"] = result["candidate_us"] / result["vendor_us"]
+        result["warmup"] = args.warmup
+        result["repeat"] = args.repeat
     return result
 
 
@@ -92,15 +85,14 @@ def main():
     parser.add_argument("--m", type=int, default=2)
     parser.add_argument("--k", type=int, default=256)
     parser.add_argument("--n", type=int, default=256)
+    parser.add_argument("--rtol", type=float, default=1e-2)
+    parser.add_argument("--atol", type=float, default=2e-2)
     parser.add_argument("--benchmark", action="store_true")
     parser.add_argument("--warmup", type=int, default=10)
     parser.add_argument("--repeat", type=int, default=50)
-    parser.add_argument("--rtol", type=float, default=1e-2)
-    parser.add_argument("--atol", type=float, default=2e-2)
     args = parser.parse_args()
     torch.npu.set_device(0)
-    result = run_case(args.m, args.k, args.n, args.warmup, args.repeat, args.benchmark, args.rtol, args.atol)
-    print(json.dumps({"status": "ok", "case": result}, indent=2, ensure_ascii=False))
+    print(json.dumps({"status": "ok", "case": run_case(args)}, indent=2, ensure_ascii=False))
 
 
 if __name__ == "__main__":

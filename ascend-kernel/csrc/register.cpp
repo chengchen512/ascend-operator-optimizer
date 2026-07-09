@@ -19,8 +19,11 @@
 namespace {
 TORCH_LIBRARY_FRAGMENT(npu, m)
 {
-    m.def("helloworld(Tensor x, Tensor y) -> Tensor");
     m.def("awq_w4a16_linear(Tensor x, Tensor weight, Tensor antiquant_scale, Tensor antiquant_offset) -> Tensor");
+    m.def("awq_w4a16_tscm_awq_probe(Tensor x, Tensor weight, Tensor antiquant_scale, Tensor antiquant_offset) -> Tensor");
+    m.def("awq_w4a16_tscm_vecout_direct_probe(Tensor x, Tensor weight, Tensor antiquant_scale, Tensor antiquant_offset) -> Tensor");
+    m.def("matmul_tscm_direct_probe(Tensor a, Tensor b, Tensor bias) -> Tensor");
+    m.def("matmul_tscm_vecout_probe(Tensor a, Tensor b, Tensor bias) -> Tensor");
     m.def("avg_pool3d(Tensor self, int[3] kernel_size, int[3] stride=[], int[3] padding=0, bool ceil_mode=False, bool count_include_pad=True, int? divisor_override=None) -> Tensor");
 
 #ifdef BUILD_CATLASS_MODULE
@@ -31,8 +34,11 @@ TORCH_LIBRARY_FRAGMENT(npu, m)
 
 TORCH_LIBRARY_IMPL(npu, PrivateUse1, m)
 {
-    m.impl("helloworld", TORCH_FN(ascend_kernel::helloworld));
     m.impl("awq_w4a16_linear", TORCH_FN(ascend_kernel::awq_w4a16_linear));
+    m.impl("awq_w4a16_tscm_awq_probe", TORCH_FN(ascend_kernel::awq_w4a16_tscm_awq_probe));
+    m.impl("awq_w4a16_tscm_vecout_direct_probe", TORCH_FN(ascend_kernel::awq_w4a16_tscm_vecout_direct_probe));
+    m.impl("matmul_tscm_direct_probe", TORCH_FN(ascend_kernel::matmul_tscm_direct_probe));
+    m.impl("matmul_tscm_vecout_probe", TORCH_FN(ascend_kernel::matmul_tscm_vecout_probe));
     m.impl("avg_pool3d", TORCH_FN(ascend_kernel::avg_pool3d));
 
 #ifdef BUILD_CATLASS_MODULE

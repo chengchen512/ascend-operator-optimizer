@@ -14,11 +14,28 @@
 
 namespace ascend_kernel {
 
-at::Tensor helloworld(const at::Tensor &x, const at::Tensor &y);
+at::Tensor awq_w4a16_linear(const at::Tensor &x,
+                            const at::Tensor &weight,
+                            const at::Tensor &antiquant_scale,
+                            const at::Tensor &antiquant_offset);
 
-at::Tensor awq_w4a16_linear(const at::Tensor &x, const at::Tensor &weight,
-                              const at::Tensor &antiquant_scale,
-                              const at::Tensor &antiquant_offset);
+at::Tensor awq_w4a16_tscm_awq_probe(const at::Tensor &x,
+                                     const at::Tensor &weight,
+                                     const at::Tensor &antiquant_scale,
+                                     const at::Tensor &antiquant_offset);
+
+at::Tensor awq_w4a16_tscm_vecout_direct_probe(const at::Tensor &x,
+                                               const at::Tensor &weight,
+                                               const at::Tensor &antiquant_scale,
+                                               const at::Tensor &antiquant_offset);
+
+at::Tensor matmul_tscm_direct_probe(const at::Tensor &a,
+                                    const at::Tensor &b,
+                                    const at::Tensor &bias);
+
+at::Tensor matmul_tscm_vecout_probe(const at::Tensor &a,
+                                    const at::Tensor &b,
+                                    const at::Tensor &bias);
 
 at::Tensor avg_pool3d(const at::Tensor &self, at::IntArrayRef kernel_size, at::IntArrayRef stride,
                       at::IntArrayRef padding, bool ceil_mode, bool count_include_pad,

@@ -5,8 +5,11 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/python/ascend_kernel/as
 FILE(GLOB OP_SRCS
     ${PROJECT_OP_SRC_BASE}/register.cpp
     ${PROJECT_OP_SRC_BASE}/aclnn/avg_pool3d.cpp
-    ${PROJECT_OP_SRC_BASE}/ops/helloworld/op_host/helloworld.cpp
     ${PROJECT_OP_SRC_BASE}/ops/awq_w4a16_linear/op_host/awq_w4a16_linear.cpp
+    ${PROJECT_OP_SRC_BASE}/ops/awq_w4a16_tscm_awq_probe/op_host/awq_w4a16_tscm_awq_probe.cpp
+    ${PROJECT_OP_SRC_BASE}/ops/awq_w4a16_tscm_vecout_direct_probe/op_host/awq_w4a16_tscm_vecout_direct_probe.cpp
+    ${PROJECT_OP_SRC_BASE}/ops/matmul_tscm_direct_probe/op_host/matmul_tscm_direct_probe.cpp
+    ${PROJECT_OP_SRC_BASE}/ops/matmul_tscm_vecout_probe/op_host/matmul_tscm_vecout_probe.cpp
     )
 if(BUILD_CATLASS_MODULE)
     list(APPEND OP_SRCS
@@ -19,36 +22,40 @@ set(OP_PLUGIN_NAME ascend_kernel)
 
 # kernel side files without workspace
 ascendc_library(no_workspace_kernel STATIC
-    ${PROJECT_OP_SRC_BASE}/ops/helloworld/op_kernel/kernel_helloworld.cpp
     ${PROJECT_OP_SRC_BASE}/ops/awq_w4a16_linear/op_kernel/awq_w4a16_linear.cpp
 )
 
-# # kernel side files with workspace
-# set(WORKSPACE_KERNEL_SRCS
-#     ${PROJECT_OP_SRC_BASE}/ops/mla_preprocess/op_kernel/mla_preprocess_kernel.cpp
-# )
+set(WORKSPACE_KERNEL_SRCS
+    ${PROJECT_OP_SRC_BASE}/ops/awq_w4a16_tscm_awq_probe/op_kernel/awq_w4a16_tscm_awq_probe.cpp
+    ${PROJECT_OP_SRC_BASE}/ops/awq_w4a16_tscm_vecout_direct_probe/op_kernel/awq_w4a16_tscm_vecout_direct_probe.cpp
+    ${PROJECT_OP_SRC_BASE}/ops/awq_w4a16_linear/op_kernel/awq_w4a16_linear_vecout.cpp
+    ${PROJECT_OP_SRC_BASE}/ops/awq_w4a16_linear/op_kernel/awq_w4a16_linear_vecout_n144.cpp
+    ${PROJECT_OP_SRC_BASE}/ops/awq_w4a16_linear/op_kernel/awq_w4a16_linear_vecout_n192.cpp
+    ${PROJECT_OP_SRC_BASE}/ops/matmul_tscm_direct_probe/op_kernel/matmul_tscm_direct_probe.cpp
+    ${PROJECT_OP_SRC_BASE}/ops/matmul_tscm_vecout_probe/op_kernel/matmul_tscm_vecout_probe.cpp
+)
 # if(BUILD_CATLASS_MODULE)
 #     list(APPEND WORKSPACE_KERNEL_SRCS
 #         ${PROJECT_OP_SRC_BASE}/ops/catlass/op_kernel/catlass_matmul_basic_kernel.cpp
 #     )
 # endif()
-# ascendc_library(workspace_kernel STATIC ${WORKSPACE_KERNEL_SRCS})
+ascendc_library(workspace_kernel STATIC ${WORKSPACE_KERNEL_SRCS})
 # if(BUILD_CATLASS_MODULE)
 #     ascendc_include_directories(workspace_kernel PRIVATE
 #         ${CATLASS_DIR}/include
 #     )
 # endif()
 
-# ascendc_compile_definitions(workspace_kernel PRIVATE
-#        -DHAVE_WORKSPACE
-#        -DHAVE_TILING
-# )
+ascendc_compile_definitions(workspace_kernel PRIVATE
+       -DHAVE_WORKSPACE
+       -DHAVE_TILING
+)
 
 # create shared library libascend_kernel.so
 add_library(${OP_PLUGIN_NAME} SHARED ${OP_SRCS})
 
 target_link_libraries(${OP_PLUGIN_NAME} PRIVATE
-        # workspace_kernel
+        workspace_kernel
         no_workspace_kernel
         torch_npu
         ascendcl

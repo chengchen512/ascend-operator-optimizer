@@ -1,13 +1,60 @@
-.agents/
-**/__pycache__/
-*.pyc
-*.pyo
-*.pyd
+# OS and editor files
+.DS_Store
+.idea/
+.vscode/
+
+# Python caches
+__pycache__/
+*.py[cod]
 .pytest_cache/
 .mypy_cache/
 .ruff_cache/
+
+# Skill execution workspace
+runs/
+work/
+tmp/
+temp/
+.cache/
+*.log
+
+# Generated optimization task files
+.operator-optim/
+failure_logs/
+optim_task.yaml
+perf_cases.jsonl
+baseline_report.md
+precision_report.md
+performance_report.md
+optim_summary.md
+*_perf_cases.jsonl
+*_baseline_report.md
+*_precision_report.md
+*_torch_npu_profiler_report.md
+*_optim_summary.md
+
+# Profiler outputs
+profiler_trace/
+ASCEND_PROFILER_OUTPUT/
+*_ascend_pt/
+msprof*/
+
+# Python package outputs
+*.pyo
+*.pyd
+*.egg-info/
 ascend-kernel/build/
 ascend-kernel/output/
 ascend-kernel/python/ascend_kernel/build/
 ascend-kernel/python/ascend_kernel/dist/
-*.egg-info/
+
+# Local Codex skill checkout state. Keep only this repository's packaged skill.
+.agents/skills/*
+!.agents/skills/ascend-operator-optimizer/
+!.agents/skills/ascend-operator-optimizer/**
+.agents/skills/ssh-remote-connect/scripts/connection.local.env
+
+# Local experiment and upstream-reference clones
+_work/
+asc-devkit/
+.tmp_upload_tar_exec.py

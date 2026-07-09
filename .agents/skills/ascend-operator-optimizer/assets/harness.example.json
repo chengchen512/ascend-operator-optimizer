@@ -1,0 +1,53 @@
+{
+  "operator": {
+    "name": "operator_name",
+    "framework": "ascend-c",
+    "notes": "Edit commands, implementation metadata, and artifact globs before running."
+  },
+  "implementation": {
+    "type": "ascendc",
+    "launch_profile": "ascendc-standard",
+    "op_name": "OperatorName"
+  },
+  "workspace": ".",
+  "run_root": ".operator-optim",
+  "commands": {
+    "env_smoke": "",
+    "build": "",
+    "launch_probe": "",
+    "correctness": "python -m pytest tests -q",
+    "benchmark": "python benchmark.py --json-output \"$OPT_HARNESS_RESULT\"",
+    "profile": ""
+  },
+  "gates": {
+    "require_correctness": true,
+    "require_same_cases": true,
+    "require_profile": false
+  },
+  "probes": {
+    "launch_coverage_min": 1.0
+  },
+  "benchmark": {
+    "unit": "us",
+    "primary_metric": "custom",
+    "smaller_is_better": true,
+    "case_key_fields": ["case", "shape", "dtype", "mode"],
+    "metadata_fields": ["profiler", "warmup", "repeat", "active", "statistic"]
+  },
+  "profiling": {
+    "analyze": false,
+    "kernel_details_glob": "**/kernel_details.csv",
+    "op_statistic_glob": "**/op_statistic.csv",
+    "underfeed_ratio_threshold": 0.1,
+    "bubble_threshold_us": 50.0
+  },
+  "artifacts": {
+    "collect": [
+      "generated/**/binary_info_config.json",
+      "generated/**/*ops-info.json",
+      "logs/**",
+      "profile/**"
+    ]
+  },
+  "environment": {}
+}

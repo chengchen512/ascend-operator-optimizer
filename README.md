@@ -1,0 +1,218 @@
+# codex-ascend-operator-optimizer
+
+A Codex Skill project for measured Ascend operator performance optimization,
+with a recorded AWQ W4A16 AscendC case study.
+
+## Design
+
+- **One decision layer:** `.agents/skills/ascend-operator-optimizer/SKILL.md`
+- **One compact knowledge base:** `.agents/skills/ascend-operator-optimizer/references/`
+- **One deterministic harness:** `.agents/skills/ascend-operator-optimizer/scripts/harness.py`
+- **One rule:** correctness first; performance claims require comparable measurements
+
+The Skill implements this loop:
+
+```text
+inspect -> env_smoke -> build -> probes -> baseline -> diagnose
+        -> one hypothesis -> patch -> correctness -> benchmark
+        -> profile -> compare -> accept/revert -> repeat (max 3)
+```
+
+Supported operator implementations:
+
+- Ascend C
+- Triton-Ascend
+- TileLang-Ascend
+
+## Repository layout
+
+```text
+.agents/skills/ascend-operator-optimizer/
+├── SKILL.md
+├── assets/harness.example.json
+├── references/
+│   ├── INDEX.md
+│   ├── hardware.md
+│   ├── playbook.md
+│   ├── constraints.md
+│   ├── harness.md
+│   ├── ascendc/
+│   │   ├── workflow.md
+│   │   ├── tiling-grid.md
+│   │   ├── data-copy.md
+│   │   ├── api-usage.md
+│   │   ├── memory.md
+│   │   ├── pipeline.md
+│   │   ├── precision.md
+│   │   ├── profiling.md
+│   │   ├── awq-w4a16.md
+│   │   └── launch-profiles.md
+│   ├── ascendc.md
+│   ├── ascendc-examples.md
+│   └── sources.md
+└── scripts/harness.py
+
+ascend-kernel/  # AWQ W4A16 AscendC operator workspace and probes
+reference/      # copied skills/API references used during the AWQ work
+AWQ_ASCENDC_OPT_EXPERIENCE.md
+skill_usage.md
+knowledge/   # legacy/source material, not required by the copied Skill
+harness/     # legacy task/report templates, not required by the copied Skill
+optimctl     # legacy local helper for the old task-template flow
+```
+
+`_work/` and `asc-devkit/` are local experiment/upstream clones and are ignored.
+
+## Use in an operator repository
+
+Copy the single Skill directory into the target repository:
+
+```bash
+mkdir -p .agents/skills
+cp -R /path/to/codex-ascend-operator-optimizer/.agents/skills/ascend-operator-optimizer \
+  .agents/skills/
+```
+
+Create the harness configuration at the target repository root:
+
+```bash
+cp .agents/skills/ascend-operator-optimizer/assets/harness.example.json \
+  operator-optim.json
+```
+
+Edit only commands, implementation metadata, and local artifact globs. The benchmark command must write JSON to `$OPT_HARNESS_RESULT`.
+
+Start Codex with:
+
+```text
+$ascend-operator-optimizer optimize this operator
+```
+
+## AWQ W4A16 case study
+
+The repository also carries the concrete Dense AWQ W4A16 Linear optimization
+run used to improve the Skill references.
+
+Key files:
+
+- `ascend-kernel/csrc/ops/awq_w4a16_linear/design.md`
+- `ascend-kernel/csrc/ops/awq_w4a16_linear/remote_test_report.md`
+- `ascend-kernel/csrc/ops/awq_w4a16_linear/op_host/awq_w4a16_linear.cpp`
+- `ascend-kernel/csrc/ops/awq_w4a16_linear/op_kernel/`
+- `skill_usage.md`
+- `AWQ_ASCENDC_OPT_EXPERIENCE.md`
+- `reference/README.md`
+
+Accepted current route:
+
+- Host keeps the Python API unchanged.
+- `AWQ_ASCENDC_ROUTE=auto` selects the stable VECOUT/Cube route for legal
+  `M<=16, K%256==0, N%128==0` shapes.
+- Auto falls back to scalar direct custom compute for broader shapes; this
+  fallback writes final output only and does not materialize a dequantized B
+  tile in GM.
+- Diagnostic `stream` and `split` routes remain explicit only because they use
+  GM scratch for antiquantized half tiles.
+
+Latest recorded target result:
+
+```text
+[16,4096,22016]
+vendor WQMM:      123.276 us
+custom candidate: 298.328 us
+candidate/vendor: 2.42x latency
+```
+
+## Harness commands
+
+Check the copied Skill layout:
+
+```bash
+python .agents/skills/ascend-operator-optimizer/scripts/harness.py doctor
+```
+
+Create a baseline:
+
+```bash
+python .agents/skills/ascend-operator-optimizer/scripts/harness.py \
+  baseline --config operator-optim.json
+```
+
+Evaluate a candidate patch:
+
+```bash
+python .agents/skills/ascend-operator-optimizer/scripts/harness.py \
+  evaluate --config operator-optim.json --label iter-1
+```
+
+Run records are stored under `.operator-optim/` and should normally be excluded from source control.
+
+Analyze an existing Ascend profiler trace directory:
+
+```bash
+python .agents/skills/ascend-operator-optimizer/scripts/harness.py \
+  profile-analyze --profile-dir .operator-optim/runs/<run-id>/profile
+```
+
+## Benchmark result contract
+
+The benchmark command receives these environment variables:
+
+- `OPT_HARNESS_PHASE`: `baseline` or `evaluate`
+- `OPT_HARNESS_LABEL`: stable run label
+- `OPT_HARNESS_ROOT`: repository root from the config file
+- `OPT_HARNESS_RUN_DIR`: artifact directory for this run
+- `OPT_HARNESS_RESULT`: JSON file path the benchmark command must write
+- `OPT_HARNESS_PROBE_RESULT`: JSON file path the launch probe command should write
+- `OPT_HARNESS_PROFILE_DIR`: directory for profiler traces
+- `OPT_HARNESS_PROFILE_RESULT`: optional JSON file path for profile command output
+- `OPT_HARNESS_IMPLEMENTATION_TYPE`: implementation type from config
+- `OPT_HARNESS_LAUNCH_PROFILE`: launch profile from config
+- `OPT_HARNESS_OP_NAME`: operator name from config
+
+Minimal result shape:
+
+```json
+{
+  "cases": [
+    {
+      "name": "case-id",
+      "latency_us": 123.4
+    }
+  ]
+}
+```
+
+Case names and units must stay stable across baseline and evaluation. Missing, extra, or incomparable cases invalidate a performance claim.
+
+## AscendC launch profiles
+
+`operator-optim.json` can declare:
+
+```json
+{
+  "implementation": {
+    "type": "ascendc",
+    "launch_profile": "ascendc-msopgen-aclnn-dynamic",
+    "op_name": "OperatorName"
+  }
+}
+```
+
+For `ascendc-msopgen-aclnn-dynamic`, `commands.launch_probe` is required by default. The probe should exercise the real launch path and write coverage JSON to `$OPT_HARNESS_PROBE_RESULT`.
+
+## Local compatibility helper
+
+`./optimctl` is kept for compatibility with the earlier task-file workflow:
+
+```bash
+./optimctl doctor
+./optimctl init --task-dir /path/to/repo/test --framework ascend-c --operator-name <op_name>
+./optimctl status --task-dir /path/to/repo/test
+```
+
+New optimization runs should prefer the self-contained Skill harness above.
+
+## Scope
+
+The compact knowledge base covers the common Ascend performance model, tiling, data movement, memory residency, pipeline overlap, kernel constraints, correctness gates, benchmark comparability, and Ascend C-specific operator notes. Device-specific constants must be obtained from the active environment rather than copied into code.

@@ -1,0 +1,102 @@
+task:
+  framework: ""   # ascend-c | triton-ascend | tilelang-ascend
+  operator_name: ""
+  launch_profile: ""   # ascendc-standard | ascendc-msopgen-aclnn-dynamic | ascendc-cube-matmul | ascendc-vector
+  target_repo: ""
+  operator_dir: ""
+  test_dir: ""
+  started_at: ""
+
+inputs:
+  design_or_notes: ""
+  operator_files: []
+  testcase_doc: ""
+  perf_cases: ""
+
+commands:
+  env_smoke: ""
+  build_or_compile: ""
+  launch_probe: ""
+  precision: ""
+  performance: ""
+  profiler: ""
+
+measurement:
+  unit: "us"
+  warmup: ""
+  repeat: ""
+  active: ""
+  kernel_name: ""
+  statistic: ""
+  trace_dir: ""
+
+artifacts:
+  failure_logs_dir: ""
+  probes_dir: ""
+  profile_dir: ""
+  baseline_report: ""
+  precision_report: ""
+  performance_report: ""
+  profile_analysis: ""
+  profile_summary: ""
+  summary_report: ""
+
+gates:
+  context:
+    status: pending
+    evidence: []
+    notes: ""
+  baseline:
+    status: pending
+    evidence: []
+    notes: ""
+  build:
+    status: pending
+    evidence: []
+    notes: ""
+  probes:
+    status: pending
+    evidence: []
+    notes: ""
+  precision:
+    status: pending
+    evidence: []
+    notes: ""
+  performance:
+    status: pending
+    evidence: []
+    notes: ""
+
+rounds:
+  - index: 1
+    target: ""
+    observations: []
+    changed_files: []
+    failure_logs:
+      - phase: ""
+        case: ""
+        command: ""
+        exit_code: ""
+        log_path: ""
+        raw_excerpt: ""
+        observed_symptom: ""
+        next_check: ""
+    build:
+      command: ""
+      status: pending
+      evidence: []
+    probes:
+      launch_coverage:
+        command: ""
+        status: pending
+        report: ""
+    precision:
+      command: ""
+      status: pending
+      report: ""
+    performance:
+      command: ""
+      status: pending
+      report: ""
+      summary: ""
+    decision: ""
