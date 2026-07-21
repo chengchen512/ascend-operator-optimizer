@@ -1,0 +1,1 @@
+{"name":"cube-local-input","prompt":"Fuse Vector preprocessing into a Cube Matmul local input without a GM intermediate.","expected_references":["tiling-cube.md","api-selection.md","pipeline-scheduling.md","optimization-patterns.md"]}

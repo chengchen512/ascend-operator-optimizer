@@ -20,6 +20,7 @@ temp/
 
 # Generated optimization task files
 .operator-optim/
+.ascendc-opt/
 failure_logs/
 optim_task.yaml
 perf_cases.jsonl
@@ -50,8 +51,8 @@ ascend-kernel/python/ascend_kernel/dist/
 
 # Local Codex skill checkout state. Keep only this repository's packaged skill.
 .agents/skills/*
-!.agents/skills/ascend-operator-optimizer/
-!.agents/skills/ascend-operator-optimizer/**
+!.agents/skills/ascendc-910b-operator-optimizer/
+!.agents/skills/ascendc-910b-operator-optimizer/**
 .agents/skills/ssh-remote-connect/scripts/connection.local.env
 
 # Local experiment and upstream-reference clones

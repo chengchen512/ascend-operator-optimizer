@@ -1,0 +1,1 @@
+{"name":"row-reduction","prompt":"Design a rowwise reduction with FP16 input and stable accumulation.","expected_references":["tiling-row-reduction.md","numerical-precision.md","precision-validation.md","memory-and-alignment.md"]}

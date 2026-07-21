@@ -1,0 +1,1 @@
+{"name":"elementwise-generation","prompt":"Generate and optimize an Ascend C elementwise operator on Ascend 910B with CANN 9.0.0.","expected_references":["environment-cann-900.md","hardware-ascend910b.md","tiling-elementwise.md","data-movement.md","pipeline-scheduling.md"]}
