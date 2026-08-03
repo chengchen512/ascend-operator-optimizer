@@ -1,0 +1,78 @@
+{
+  "operator": {
+    "name": "operator_name",
+    "semantics": "Describe the mathematical operation and quantization semantics.",
+    "inputs": [],
+    "outputs": [],
+    "dtypes": ["float16"],
+    "layouts": ["ND"],
+    "shape_constraints": [],
+    "public_interface": "Preserve the existing Python/ACLNN signature."
+  },
+  "target": {
+    "soc_family": "Ascend910B",
+    "soc_version": "",
+    "cann_version": "9.0.0",
+    "programming_model": "Ascend C"
+  },
+  "implementation": {
+    "type": "ascendc",
+    "launch_profile": "ascendc-standard",
+    "op_name": "OperatorName"
+  },
+  "workspace": ".",
+  "run_root": ".ascendc-opt",
+  "commands": {
+    "env_smoke": "",
+    "build": "",
+    "launch_probe": "",
+    "precision": "python -m pytest tests -q",
+    "benchmark": "python benchmark.py --json-output \"$ASCENDC_OPT_RESULT\"",
+    "profile": ""
+  },
+  "constraints": {
+    "forbidden_routes": [],
+    "required_fallback": "generic custom implementation",
+    "max_candidates": 8,
+    "max_consecutive_rejections": 3
+  },
+  "precision": {
+    "reference": "",
+    "rtol": 0.001,
+    "atol": 0.001,
+    "repeat_runs": 3
+  },
+  "benchmark": {
+    "cases_file": "benchmark-cases.jsonl",
+    "unit": "us",
+    "primary_metric": "candidate",
+    "smaller_is_better": true,
+    "case_key_fields": ["case", "shape", "dtype", "mode"],
+    "metadata_fields": ["profiler", "warmup", "repeat", "active", "statistic"],
+    "noise_threshold_percent": 1.0
+  },
+  "gates": {
+    "require_precision": true,
+    "require_same_cases": true,
+    "require_profile": false
+  },
+  "probes": {
+    "launch_coverage_min": 1.0
+  },
+  "profiling": {
+    "analyze": true,
+    "kernel_details_glob": "**/kernel_details.csv",
+    "op_statistic_glob": "**/op_statistic.csv",
+    "underfeed_ratio_threshold": 0.1,
+    "bubble_threshold_us": 50.0
+  },
+  "artifacts": {
+    "collect": [
+      "generated/**/binary_info_config.json",
+      "generated/**/*ops-info.json",
+      "logs/**",
+      "profile/**"
+    ]
+  },
+  "environment": {}
+}

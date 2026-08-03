@@ -1,122 +1,88 @@
-# codex-ascend-operator-optimizer
+# ascendc-910b-operator-optimizer
 
-A Codex Skill project for measured Ascend operator performance optimization.
-It packages the optimization workflow, compact references, and validation
-harness needed to optimize Ascend operator implementations repeatably.
+A single Codex Skill for generating, validating, profiling, debugging, and iteratively optimizing project-based Ascend C operators on Ascend 910B with CANN 9.0.0.
 
-## Design
-
-- **One decision layer:** `.agents/skills/ascend-operator-optimizer/SKILL.md`
-- **One compact knowledge base:** `.agents/skills/ascend-operator-optimizer/references/`
-- **One deterministic harness:** `.agents/skills/ascend-operator-optimizer/scripts/harness.py`
-- **One rule:** correctness first; performance claims require comparable measurements
-
-The Skill implements this loop:
+## Structure
 
 ```text
-inspect -> env_smoke -> build -> probes -> baseline -> diagnose
-        -> one hypothesis -> patch -> correctness -> benchmark
-        -> profile -> compare -> accept/revert -> repeat (max 3)
+.agents/skills/ascendc-910b-operator-optimizer/
+├── SKILL.md                 # workflow, routing, and hard gates
+├── agents/openai.yaml       # Codex UI metadata
+├── references/              # flat, selectively loaded knowledge
+├── assets/                  # spec, cases, report, scaffold, templates
+└── scripts/harness.py       # deterministic execution and run records
+
+tests/
+├── skill-cases/             # routing/behavior contract cases
+└── test_skill_contract.py   # layout and harness tests
 ```
 
-Supported operator implementations:
+The Skill deliberately does not split design, code generation, debug, evaluation, and optimization into separate Skills. One entry point keeps the target contract and candidate history coherent; detailed knowledge is loaded through `references/INDEX.md` only when needed.
 
-- Ascend C
-- Triton-Ascend
-- TileLang-Ascend
+## Target
 
-## Repository layout
+- Ascend 910B hardware family
+- CANN 9.0.0
+- Ascend C Host tiling and Device kernel development
+- project-based custom operators
+
+Local CANN headers, compiler behavior, and on-device evidence take priority over static notes.
+
+## Use
+
+Invoke:
 
 ```text
-.agents/skills/ascend-operator-optimizer/
-├── SKILL.md           # entry point and routing rules
-├── assets/            # harness config example
-├── references/        # optimization knowledge base
-└── scripts/           # benchmark/profile harness
-
-ascend-kernel/  # local AscendC operator workspace and probes
-reference/      # curated skills/API references
-skill_usage.md
-knowledge/       # legacy/source material
-harness/         # legacy task/report templates
-optimctl         # compatibility helper for the old workflow
+$ascendc-910b-operator-optimizer generate and optimize this Ascend C operator
 ```
 
-`_work/` and `asc-devkit/` are local experiment/upstream clones and are ignored.
-
-## Use in an operator repository
-
-Copy the single Skill directory into the target repository:
+Initialize deterministic state in an operator workspace:
 
 ```bash
-mkdir -p .agents/skills
-cp -R /path/to/codex-ascend-operator-optimizer/.agents/skills/ascend-operator-optimizer \
-  .agents/skills/
+python .agents/skills/ascendc-910b-operator-optimizer/scripts/harness.py \
+  init \
+  --workspace /path/to/operator \
+  --spec .agents/skills/ascendc-910b-operator-optimizer/assets/operator-spec.example.yaml \
+  --cases .agents/skills/ascendc-910b-operator-optimizer/assets/benchmark-cases.example.jsonl
 ```
 
-Create the harness configuration at the target repository root:
-
-```bash
-cp .agents/skills/ascend-operator-optimizer/assets/harness.example.json \
-  operator-optim.json
-```
-
-Edit only commands, implementation metadata, and local artifact globs. The benchmark command must write JSON to `$OPT_HARNESS_RESULT`.
-
-Start Codex with:
+The target workspace receives:
 
 ```text
-$ascend-operator-optimizer optimize this operator
+.ascendc-opt/
+├── spec.json
+├── environment.json
+├── baseline.json
+├── best.json
+├── history.jsonl
+├── candidates/
+├── runs/
+└── reports/final-report.md
 ```
 
-## Harness commands
-
-Check the copied Skill layout:
+Establish and evaluate candidates:
 
 ```bash
-python .agents/skills/ascend-operator-optimizer/scripts/harness.py doctor
+python .agents/skills/ascendc-910b-operator-optimizer/scripts/harness.py \
+  baseline --config /path/to/operator/.ascendc-opt/spec.json
+
+python .agents/skills/ascendc-910b-operator-optimizer/scripts/harness.py \
+  evaluate \
+  --config /path/to/operator/.ascendc-opt/spec.json \
+  --label candidate-001 \
+  --hypothesis "increase tile size to reduce MTE2 task count" \
+  --change "tile_length: 4096 -> 8192"
 ```
 
-Create a baseline:
+The benchmark command writes structured JSON to `$ASCENDC_OPT_RESULT`. Baseline and candidate case identities, units, and configured measurement metadata must match.
+
+## Validate
 
 ```bash
-python .agents/skills/ascend-operator-optimizer/scripts/harness.py \
-  baseline --config operator-optim.json
+python .agents/skills/ascendc-910b-operator-optimizer/scripts/harness.py doctor
+python -m unittest discover -s tests -p "test_*.py" -v
+python C:/Users/CHENG/.codex/skills/.system/skill-creator/scripts/quick_validate.py \
+  .agents/skills/ascendc-910b-operator-optimizer
 ```
 
-Evaluate a candidate patch:
-
-```bash
-python .agents/skills/ascend-operator-optimizer/scripts/harness.py \
-  evaluate --config operator-optim.json --label iter-1
-```
-
-Run records are stored under `.operator-optim/` and should normally be excluded from source control.
-
-Analyze an existing Ascend profiler trace directory:
-
-```bash
-python .agents/skills/ascend-operator-optimizer/scripts/harness.py \
-  profile-analyze --profile-dir .operator-optim/runs/<run-id>/profile
-```
-
-## Benchmark Contract
-
-The benchmark command must write a JSON file to `$OPT_HARNESS_RESULT`:
-
-```json
-{
-  "cases": [
-    {
-      "name": "case-id",
-      "latency_us": 123.4
-    }
-  ]
-}
-```
-
-Case names and units must stay stable across baseline and evaluation. Missing, extra, or incomparable cases invalidate a performance claim.
-
-## Scope
-
-The compact knowledge base covers the common Ascend performance model, tiling, data movement, memory residency, pipeline overlap, kernel constraints, correctness gates, benchmark comparability, and Ascend C-specific operator notes. Device-specific constants must be obtained from the active environment rather than copied into code.
+Operator experiments may live elsewhere in this repository, but the Skill itself is self-contained and never stores mutable run state inside its own directory.

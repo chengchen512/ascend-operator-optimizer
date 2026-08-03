@@ -1,0 +1,4 @@
+interface:
+  display_name: "Ascend C 910B Operator Optimizer"
+  short_description: "Generate and optimize Ascend C operators on 910B"
+  default_prompt: "Use $ascendc-910b-operator-optimizer to build or optimize this Ascend C operator with evidence-backed correctness and performance gates."

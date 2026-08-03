@@ -1,0 +1,1 @@
+{"name":"index-operator","prompt":"Optimize an Ascend C gather/scatter operator with irregular indices.","expected_references":["tiling-index.md","data-movement.md","memory-and-alignment.md","failure-patterns.md"]}

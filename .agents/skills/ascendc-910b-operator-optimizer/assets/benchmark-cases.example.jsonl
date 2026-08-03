@@ -1,0 +1,3 @@
+{"case":"tiny-tail","shape":[3,257],"dtype":"float16","mode":"auto","purpose":"block and tile tail"}
+{"case":"aligned-medium","shape":[128,4096],"dtype":"float16","mode":"auto","purpose":"steady-state aligned path"}
+{"case":"large-general","shape":[1024,8192],"dtype":"float16","mode":"auto","purpose":"multicore and bandwidth path"}

@@ -1,0 +1,21 @@
+category: elementwise
+programming_model: ascendc-simd
+target:
+  soc_family: Ascend910B
+  cann_version: 9.0.0
+supports:
+  dtypes:
+    - float16
+    - bfloat16
+    - float32
+  contiguous_input: true
+tiling:
+  multicore: true
+  block_tail: true
+  tile_tail: true
+pipeline:
+  double_buffer: optional
+constraints:
+  - Query core count and UB size from PlatformAscendC.
+  - Replace template placeholders before compiling.
+  - Validate DataCopyPad units and all valid/aligned lengths.
