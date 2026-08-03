@@ -37,6 +37,18 @@ For every non-trivial API choice, record:
 - Use high-level Matmul when its call granularity and internal movement fit the operator. Evaluate Mmad/lower-level routes only with a complete L0/L1 and synchronization design.
 - Use `SetTensorA/B(LocalTensor)` only with a supported `TPosition`, enough storage for the configured single tile, and the format expected by Matmul.
 
+## Direct Mmad and Fixpipe Semantics
+
+Probe these `MmadParams` fields explicitly instead of treating them as generic bias flags:
+
+- `cmatrixInitVal=true`: initialize the C matrix to zero for a fresh accumulation.
+- `cmatrixInitVal=false, cmatrixSource=false`: accumulate from existing CO1, suitable for later K partitions when that lifetime is valid.
+- `cmatrixInitVal=false, cmatrixSource=true`: source the initial C matrix from C2/BT on the demonstrated overload.
+- The explicit bias-tensor `Mmad` overload has its own contract; do not assume `cmatrixSource` controls it.
+- Set `kDirectionAlign` only for a dtype/layout combination whose local declaration or same-product example requires it.
+
+For `FixpipeParamsV220` row-major output, keep `mSize/nSize` and destination stride at valid output extents while using the aligned CO1 source stride required by its fractal layout. Compile a minimal probe for tail M/N before integrating the path.
+
 ## High-Risk Searches
 
 For local-B/TSCM/Cube work, search these together:

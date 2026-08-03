@@ -16,7 +16,7 @@ Load only the rows needed for the current task. Files are one level below `SKILL
 | Runtime 507015 or memory fault | `failure-patterns.md`, `memory-and-alignment.md`, `pipeline-scheduling.md` |
 | Precision failure | `precision-validation.md`, `numerical-precision.md`, `failure-patterns.md` |
 | Performance work | `profiling-metrics.md`, `optimization-playbook.md`, `optimization-patterns.md` |
-| AWQ/W4A16/int4 local-B | `optimization-patterns-awq-w4a16.md`, `tiling-cube.md`, `api-selection.md` |
+| AWQ/W4A16/int4 local-B | `optimization-patterns-awq-w4a16.md`, `tiling-cube.md`, `data-movement.md`, `memory-and-alignment.md`, `api-selection.md`, `pipeline-scheduling.md` |
 | Harness or run state | `harness-contract.md`, `workflow-contract.md` |
 | Source provenance | `sources.md` |
 
@@ -26,6 +26,7 @@ For files longer than 100 lines, inspect headings first and search for the API, 
 
 ```text
 DataCopyPad TQue TQueBind TSCM VECOUT SetTensorB Matmul Mmad Fixpipe
+Nd2NzParams LoadDataWithTranspose cmatrixInitVal cmatrixSource kDirectionAlign
 PlatformAscendC GetCoreNum GetUbSize GetLibApiWorkSpaceSize 507015
 ```
 

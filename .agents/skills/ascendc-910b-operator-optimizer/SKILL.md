@@ -59,7 +59,7 @@ Then route through [INDEX.md](references/INDEX.md):
 - compile or launch failure: `compile-and-debug.md`, `failure-patterns.md`, `framework-integration.md`
 - precision failure: `numerical-precision.md`, `precision-validation.md`, `failure-patterns.md`
 - performance optimization: `profiling-metrics.md`, `optimization-playbook.md`, `optimization-patterns.md`
-- AWQ/W4A16/int4 local-B work: `optimization-patterns-awq-w4a16.md`
+- AWQ/W4A16/int4 local-B work: `optimization-patterns-awq-w4a16.md`, `tiling-cube.md`, `data-movement.md`, `memory-and-alignment.md`, `api-selection.md`, `pipeline-scheduling.md`
 
 Search local CANN headers and the curated API source map before guessing an API signature. Load only the relevant reference files; do not ingest the whole knowledge base by default.
 

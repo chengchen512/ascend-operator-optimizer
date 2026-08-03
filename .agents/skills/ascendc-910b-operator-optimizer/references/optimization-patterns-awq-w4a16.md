@@ -66,6 +66,19 @@ For `VECIN/VECOUT -> TSCM -> SetTensorB`, require a standalone probe that proves
 - repeat correctness and fixed-repeat benchmark completion
 - no `507015`, timeout, or event leak
 
+## Direct-int4 Mmad Design Gate
+
+A direct `int4b_t` Cube candidate can avoid both public Matmul granularity and half-B GM materialization, but accept it only after proving the full contract:
+
+1. Preserve signed packed-nibble interpretation from framework weight storage to `GlobalTensor<int4b_t>`.
+2. Keep logical `K` for tiling and MMAD while using packed byte extents only in APIs whose copy fields are byte-based.
+3. Prove GM ND -> B1 converted layout -> B2 ZN/required Cube layout with a standalone non-square and tail probe.
+4. Budget B1/B2 from int4 Cube C0 geometry and prove all local offsets in bytes.
+5. Preserve `MTE2_MTE1 -> MTE1_M -> M_FIX` dependencies and repeated-run event reuse.
+6. Accumulate K partitions in CO1 with the documented `cmatrixInitVal/cmatrixSource` combination when capacity permits; use Fixpipe only after the final local accumulation.
+
+Do not copy the example's compile-time M/N/K, single-block launch, broad final barrier, or architecture branches into production. Use it to derive a probe, then query core count, tile resources, and exact CANN 9.0.0 overloads for the target operator.
+
 ## Next High-Value Direction
 
 Seek a supported lower-overhead fused AIV/AIC or local int8/int4 antiquant path that reduces public Matmul calls and GM atomic partial writes. Do not return to a dequantized-GM cache to improve a bandwidth-saving operator.

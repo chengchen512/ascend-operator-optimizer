@@ -30,6 +30,19 @@ Reject when small shapes finish in one tile, one pipeline dominates completely, 
 
 Specify which engine owns allocation, transformation, enqueue/dequeue, Matmul setup, and release. Verify producer completion before Cube reads and Cube completion before reuse/free. Single-run success is insufficient; run repeated correctness and benchmark loops to expose stale-event and lifetime bugs.
 
+## Direct Mmad Event Chain
+
+For manually managed A1/B1/C1 and L0 tensors, preserve the narrow engine chain:
+
+```text
+GM -> L1 DataCopy       Set MTE2_MTE1
+L1 -> L0 LoadData       Wait MTE2_MTE1; Set MTE1_M
+Mmad                    Wait A/B MTE1_M; Set M_FIX
+Fixpipe CO1 -> GM       Wait M_FIX
+```
+
+Use separate event IDs for independently moving A, B, and bias. Reuse an L1 or L0 region only after its last asynchronous consumer completes. A final `PipeBarrier<PIPE_ALL>()` does not repair a missing stage dependency and is not a substitute for these events.
+
 ## Diagnosis
 
 - Nondeterministic results: missing dependency or uninitialized data.
